@@ -1,0 +1,15 @@
+\begin{tikzpicture}[
+  layer/.style={rectangle, rounded corners, draw, thick, minimum width=12cm,
+    minimum height=1.6cm, align=center, font=\small},
+  >=Stealth
+]
+  \node[layer, fill=accent!15]  (l1) at (0, 0)  {\textbf{Couche 5 — Services utilisateurs} : IaaS, cyberlabs, services communs};
+  \node[layer, fill=secondary!15] (l2) at (0, -2) {\textbf{Couche 4 — Orchestration} : OpenStack / Proxmox, quotas, gouvernance};
+  \node[layer, fill=primary!10] (l3) at (0, -4) {\textbf{Couche 3 — Hyperviseurs} : Proxmox (transitoire), OpenStack (cible)};
+  \node[layer, fill=warning!10] (l4) at (0, -6) {\textbf{Couche 2 — Réseau} : SRX300, switches Cisco, VLAN, VPN};
+  \node[layer, fill=success!10] (l5) at (0, -8) {\textbf{Couche 1 — Physique} : serveurs, stockage, alimentation, climatisation};
+
+  \foreach \i/\j in {1/2, 2/3, 3/4, 4/5} {
+    \draw[->, thick] (l\i.south) -- (l\j.north);
+  }
+\end{tikzpicture}

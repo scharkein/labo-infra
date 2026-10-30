@@ -1,0 +1,36 @@
+\chapter{Justification et argumentaire}
+\label{chap:justification}
+
+\begin{todobox}[Chapitre à compléter après chiffrage]
+Ce chapitre est destiné à la direction. Il présente les scénarios d'investissement, les coûts et les bénéfices.
+\end{todobox}
+
+\section{Scénarios d'investissement}
+\begin{todobox}[À produire après audit]
+\begin{itemize}
+  \item Scénario minimal : RAM + disques R630 uniquement.
+  \item Scénario cible : RAM + disques + réseau 10 GbE + éventuellement serveurs complémentaires.
+\end{itemize}
+\end{todobox}
+
+\section{Argumentaire pour la direction}
+\begin{itemize}
+  \item La plateforme historique a déjà supporté 500 utilisateurs. Sa remise en service est prioritaire.
+  \item La phase transitoire permet de fournir des services rapidement sans attendre la reconstruction.
+  \item L'architecture est modulaire : chaque investissement débloque une étape.
+  \item L'infrastructure est exploitable par une personne formée, sans dépendance à un prestataire.
+  \item La trajectoire OpenStack aligne l'école sur les standards de l'industrie du cloud.
+\end{itemize}
+
+\section{Risques et mitigation}
+\begin{tabularx}{\textwidth}{@{}lXX@{}}
+\toprule
+\textbf{Risque} & \textbf{Impact} & \textbf{Mitigation} \\
+\midrule
+Matériel historique non réutilisable & Reconstruction complète = coût élevé & Audit préalable, scénarios alternatifs \\
+Perte de compétence (départ admin) & Infrastructure non maintenue & Documentation, formation, externalisation minimale \\
+Dépassement budgétaire & Retard de phases & Découpage en lots, jalons de validation \\
+Attaque cyberlab & Compromission de l'infra & Isolation stricte, supervision \\
+SRX300 sous-dimensionné & VPN étudiant impossible & Concentrateur VPN dédié, portail web \\
+\bottomrule
+\end{tabularx}

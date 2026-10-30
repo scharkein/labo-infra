@@ -1,0 +1,56 @@
+\chapter{Déploiement et roadmap}
+\label{chap:deploiement}
+
+\section{Trajectoire}
+\begin{tabularx}{\textwidth}{@{}llXl@{}}
+\toprule
+\textbf{Phase} & \textbf{Durée} & \textbf{Objectif} & \textbf{Jalon} \\
+\midrule
+0 — Audit & 2 sem. & Inventaire complet & Rapport d'audit \\
+1 — Socle Proxmox & 1–2 mois & Cluster opérationnel & Plateforme stable \\
+2 — Labo OpenStack & 3–4 mois & OpenStack fonctionnel & Tests quotas validés \\
+3 — Pilote & 3–6 mois & Premiers groupes réels & Retour d'usage \\
+4 — Reconstruction & 6–12 mois & Salle historique opérationnelle & OpenStack bare metal \\
+5 — Production & Continu & Ouverture à tous & Recette utilisateur \\
+\bottomrule
+\end{tabularx}
+
+\section{Phase 0 — Audit}
+Voir chapitre~\ref{chap:audit}. Critères de sortie : inventaire complet, identification des réutilisables, décision Go/No-Go pour la phase 1.
+
+\section{Phase 1 — Socle Proxmox}
+\begin{itemize}
+  \item Achat et installation RAM/disques sur les 4 R630.
+  \item Installation Proxmox VE sur les 4 nœuds, cluster, quorum.
+  \item Configuration réseau (VLAN 10, 20, 40).
+  \item Configuration ZFS local.
+  \item Premières VM de service (DNS, reverse proxy, supervision, ticketing).
+\end{itemize}
+Critères de sortie : plateforme stable 30 jours, backups fonctionnels, supervision en place.
+
+\section{Phase 2 — Labo OpenStack}
+\begin{itemize}
+  \item Déploiement OpenStack en VM sur Proxmox (Kolla-Ansible).
+  \item Mise en place de Keystone, Nova, Neutron, Glance, Cinder, Horizon.
+  \item Tests des quotas (modèle B, puis implémentation du modèle C).
+  \item Documentation des procédures.
+\end{itemize}
+Critères de sortie : un étudiant test peut créer ses VM, contribuer à un groupe, récupérer son quota.
+
+\section{Phase 3 — Pilote}
+\begin{itemize}
+  \item Ouverture à 1–2 groupes réels.
+  \item Collecte des métriques d'usage.
+  \item Ajustement des quotas et des procédures.
+\end{itemize}
+Critères de sortie : retour qualitatif et quantitatif, décision de passage à la phase 4.
+
+\section{Phase 4 — Reconstruction}
+\begin{todobox}[À détailler après audit]
+Ordre de reconstruction, procédures de migration, plan de bascule, fenêtres de maintenance, communication aux utilisateurs.
+\end{todobox}
+
+\section{Phase 5 — Production}
+\begin{todobox}[À détailler après phase 3]
+Ouverture à tous, plan de support, procédures d'incident, cycle de vie des projets.
+\end{todobox}

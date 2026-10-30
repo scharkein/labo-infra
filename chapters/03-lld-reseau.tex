@@ -1,0 +1,155 @@
+\chapter{LLD — Réseau}
+\label{chap:reseau}
+
+\section{Principes de conception}
+\begin{itemize}
+  \item Segmentation stricte par zone fonctionnelle (VLAN).
+  \item Routage inter-VLAN assuré par le SRX300 (avec option de routage L3 local sur Cisco si volumétrie importante).
+  \item Aucun flux implicite entre zones : le filtrage est assuré par le SRX.
+  \item Le bloc public /28 est routé vers le SRX300, qui assure le NAT et le filtrage périmétrique.
+  \item Les switches Cisco assurent le L2 et, en option, le L3 local.
+  \item Le réseau de stockage est physiquement séparé si des ports 10 GbE sont disponibles.
+\end{itemize}
+
+\section{Plan de VLAN}
+\begin{tabularx}{\textwidth}{@{}rrrrX@{}}
+\toprule
+\textbf{VLAN} & \textbf{Nom} & \textbf{Sous-réseau} & \textbf{Passerelle} & \textbf{Usage} \\
+\midrule
+10  & MGMT       & 10.10.0.0/24  & 10.10.0.1  & iDRAC, mgmt switches, mgmt SRX, mgmt hyperviseurs \\
+20  & SRV-CLOUD  & 10.20.0.0/24  & 10.20.0.1  & Trafic des VM (Proxmox, puis OpenStack) \\
+30  & STORAGE    & 10.30.0.0/24  & (pas de GW) & Ceph public/cluster, NFS, iSCSI (isolé) \\
+40  & LIVE-MIG   & 10.40.0.0/24  & (pas de GW) & Migration live (LACP dédié) \\
+50  & DMZ        & 10.50.0.0/24  & 10.50.0.1  & Reverse proxy, services exposés \\
+60  & VPN-USERS  & 10.60.0.0/24  & 10.60.0.1  & Sessions VPN étudiantes \\
+70  & ADMIN      & 10.70.0.0/24  & 10.70.0.1  & Bastion, VMs d'admin \\
+80  & CYBERLAB   & 10.80.0.0/23  & 10.80.0.1  & Cyberlabs isolés (VLAN + security groups) \\
+90  & VXLAN-OVL  & 10.90.0.0/24  & 10.90.0.1  & Endpoints VXLAN Neutron \\
+100 & RESERVE-1  & 10.100.0.0/24 & —          & Réservé (futur tenant dédié) \\
+\bottomrule
+\end{tabularx}
+
+\begin{infobox}[Traitement des tenants OpenStack]
+Les réseaux « tenant » d'OpenStack ne sont pas mappés sur des VLAN dédiés. Neutron utilise une encapsulation VXLAN, dont les endpoints résident sur le VLAN 90. Cela évite la limite de 4094 VLAN et permet un nombre arbitraire de réseaux par projet.
+\end{infobox}
+
+\section{Plan d'adressage — conventions}
+\begin{tabularx}{\textwidth}{@{}lX@{}}
+\toprule
+\textbf{Plage} & \textbf{Usage} \\
+\midrule
+.x.1              & Passerelle SRX300 \\
+.x.2 à .x.9       & Équipements réseau (switches, bornes) \\
+.x.10 à .x.19     & Hyperviseurs et serveurs critiques \\
+.x.20 à .x.49     & Serveurs génériques \\
+.x.50 à .x.99     & VMs de services communs \\
+.x.100 à .x.149   & Pool DHCP (si applicable) \\
+.x.150 à .x.199   & Réservé \\
+.x.200 à .x.249   & Réservé administration / outillage \\
+.x.250 à .x.254   & Réservé adresses de service HA \\
+\bottomrule
+\end{tabularx}
+
+\section{Bloc public /28}
+Le bloc \texttt{178.16.175.144/28} est routé vers le SRX300.
+
+\begin{tabularx}{\textwidth}{@{}lX@{}}
+\toprule
+\textbf{Adresse} & \textbf{Usage} \\
+\midrule
+.144    & Adresse réseau (non utilisable) \\
+.145    & Passerelle opérateur \\
+.146    & Réservé services critiques \\
+.147    & Réservé DNS inverse \\
+.148    & Réservé supervision externe \\
+.149    & Réservé \\
+.150    & Reverse proxy public \\
+.151    & VPN (IKEv2 / WireGuard) \\
+.152–.155 & Pool NAT sortant (PAT) \\
+.156    & VIP Horizon / portail \\
+.157    & Management SRX (accès via VPN uniquement) \\
+.158    & VM de services exposés (Minecraft etc.) \\
+.159    & Adresse de broadcast (non utilisable) \\
+\bottomrule
+\end{tabularx}
+
+\begin{warnbox}[Ne pas exposer le management directement sur Internet]
+L'adresse \texttt{.157} n'est pas un port d'administration public. Elle est utilisée uniquement comme point d'accès VPN pour les administrateurs. L'administration du SRX et des équipements reste sur le VLAN 10 (management).
+\end{warnbox}
+
+\section{Topologie physique}
+\begin{figure}[htbp]
+\centering
+\input{figures/fig-reseau-l2l3}
+\caption{Topologie réseau L2/L3 — vue logique.}
+\label{fig:reseau-l2l3}
+\end{figure}
+
+\section{Règles de filtrage SRX — vue synthétique}
+\begin{tabularx}{\textwidth}{@{}lXXXX@{}}
+\toprule
+\textbf{Source} & \textbf{Dest.} & \textbf{Ports} & \textbf{Action} & \textbf{Commentaire} \\
+\midrule
+Internet     & DMZ          & 80, 443           & allow & Reverse proxy \\
+Internet     & DMZ          & 1194/udp, 51820/udp & allow & VPN \\
+Internet     & Tout interne & —                 & deny  & \\
+VPN-USERS    & SRV-CLOUD    & 443               & allow & Horizon, API \\
+VPN-USERS    & SRV-CLOUD    & autre             & deny  & \\
+VPN-USERS    & MGMT         & —                 & deny  & Jamais \\
+VPN-USERS    & DMZ          & —                 & deny  & \\
+MGMT         & Tous         & —                 & allow & Réseau d'admin \\
+ADMIN        & Tous         & —                 & allow & Bastion \\
+SRV-CLOUD    & Internet     & —                 & allow & Sortie NAT \\
+SRV-CLOUD    & MGMT         & —                 & deny  & Isolation \\
+CYBERLAB     & Tous         & —                 & deny  & Isolé par défaut \\
+CYBERLAB     & Internet     & —                 & deny  & Sauf scénario explicite \\
+\bottomrule
+\end{tabularx}
+
+\begin{infobox}[Approche « deny by default »]
+Toutes les zones ont une politique par défaut de rejet. Seuls les flux listés ci-dessus sont explicitement autorisés. Ce choix simplifie l'audit et réduit la surface d'attaque.
+\end{infobox}
+
+\section{Configuration Cisco — éléments clés}
+\begin{todobox}[À détailler après identification du modèle exact]
+La configuration Cisco dépendra du modèle exact (Catalyst, Nexus, autre) et du nombre de ports. Les éléments à prévoir sont :
+\begin{itemize}
+  \item VLANs déclarés (802.1Q), trunks entre switches, VLAN natif dédié à un usage neutre.
+  \item LACP entre switches (port-channel) et vers les serveurs si NICs multiples.
+  \item L3 sur le switch si volumétrie inter-VLAN importante (option).
+  \item QoS basique : priorisation du management sur le bulk storage.
+  \item STP/RSTP : configuré pour éviter les boucles, avec portfast sur les ports serveurs.
+  \item Désactivation des ports non utilisés et assignation à un VLAN parking.
+  \item Sécurisation de l'accès management : SSH uniquement, ACL restreinte, AAA (RADIUS/TACACS+ si disponible).
+\end{itemize}
+\end{todobox}
+
+\section{MTU et performance}
+\begin{itemize}
+  \item Si des liens 10 GbE sont disponibles, le stockage (VLAN 30) est configuré en MTU 9000 (jumbo frames).
+  \item Le management et le trafic VM restent en MTU 1500 sauf justification.
+  \item L'encapsulation VXLAN de Neutron ajoute 50 octets par paquet, ce qui doit être pris en compte pour le MTU côté compute.
+  \item Les flux Internet restent à MTU 1500 avec MSS clamping sur le SRX.
+\end{itemize}
+
+\section{Limite connue : le SRX300 en bordure}
+Le SRX300 annonce environ 1,9 Gbps de débit firewall et 336 Mbps de débit IPsec. Ce dernier chiffre est un point d'attention si tu veux faire passer tous les flux étudiants derrière un VPN.
+
+\begin{warnbox}[Recommandation sur le VPN]
+Le SRX300 ne peut pas servir de concentrateur VPN pour 500 étudiants. Il faut :
+\begin{itemize}
+  \item Limiter le VPN SRX à l'administration (une dizaine d'utilisateurs simultanés max).
+  \item Déployer un concentrateur VPN dédié (WireGuard, OpenVPN, ou une VM OpenStack dédiée) pour les étudiants.
+  \item Ou ne pas exposer les étudiants en VPN, mais via un portail web (Horizon + API via reverse proxy).
+\end{itemize}
+\end{warnbox}
+
+\section{Points à vérifier après l'audit}
+\begin{itemize}
+  \item Modèle exact du SRX300 et version JunOS.
+  \item Nombre de ports, débit des switches Cisco, support du 10 GbE.
+  \item Topologie physique des liens entre switches.
+  \item Présence de SFP+ 10 GbE et de DAC/fibre.
+  \item Configuration actuelle du bloc /28 (routage, NAT existant).
+  \item Redondance électrique des switches et du SRX.
+\end{itemize}

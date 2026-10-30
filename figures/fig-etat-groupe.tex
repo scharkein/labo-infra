@@ -1,0 +1,20 @@
+\resizebox{\textwidth}{!}{%
+\begin{tikzpicture}[
+  >=Stealth, node distance=4cm,
+  state/.style={rectangle, rounded corners, draw, thick,
+    minimum width=3.2cm, minimum height=1.3cm, align=center, font=\small},
+  every edge/.style={draw, ->, thick},
+  every edge quotes/.style={auto, font=\footnotesize, align=center}
+]
+  \node[state, fill=success!15] (active) {\textbf{ACTIVE}\\\footnotesize $\geq 2$ membres};
+  \node[state, fill=accent!20, right=of active] (pending_delete)
+    {\textbf{PENDING\_DELETE}\\\footnotesize $< 2$ membres, 30 j};
+  \node[state, fill=warning!15, right=of pending_delete] (deleted)
+    {\textbf{DELETED}\\\footnotesize projet supprimé};
+
+  \path[->]
+    (active)         edge[bend left=15] node[above, align=center]{effectif $< 2$} (pending_delete)
+    (pending_delete) edge[bend left=15] node[below, align=center]{nouveau membre} (active)
+    (pending_delete) edge node[above, align=center]{délai expiré\\ou action admin} (deleted);
+\end{tikzpicture}%
+}

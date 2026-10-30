@@ -1,0 +1,123 @@
+\chapter{HLD — Architecture de haut niveau}
+\label{chap:hld}
+
+\section{Vue d'ensemble}
+L'architecture cible se décompose en cinq couches, de la plus basse (infrastructure physique) à la plus haute (services utilisateurs).
+
+\begin{figure}[htbp]
+\centering
+\input{figures/fig-archi-physique}
+\caption{Architecture en couches — vue logique.}
+\label{fig:archi-layers}
+\end{figure}
+
+\section{Couche 1 — Infrastructure physique}
+\begin{tabularx}{\textwidth}{@{}lXl@{}}
+\toprule
+\textbf{Composant} & \textbf{Rôle} & \textbf{État} \\
+\midrule
+Serveurs R630 (×4) & Plateforme transitoire & Disponibles, RAM/disques à acheter \\
+Serveurs historiques & Cible OpenStack & À inventorier \\
+Baies de stockage & Stockage partagé & À inventorier \\
+Juniper SRX300 & Firewall, VPN, NAT & Présent, à confirmer \\
+Switches Cisco & Switching L2/L3, VLAN & Présents, administrables \\
+Fibre opérateur & Accès Internet & Présente \\
+Bloc public /28 & Publication de services & Routé vers SRX300 \\
+Onduleur & Continuité électrique & Non confirmé \\
+Climatisation & Refroidissement & Présente \\
+\bottomrule
+\end{tabularx}
+
+\section{Couche 2 — Réseau et sécurité}
+Le réseau est segmenté en zones logiques (VLAN), avec un filtrage strict entre zones. Le SRX300 assure le routage inter-VLAN critique, le NAT sortant et le VPN d'accès. Les switches Cisco assurent le switching L2 et, si nécessaire, le routage L3 local.
+
+Voir chapitre~\ref{chap:reseau} pour la spécification complète.
+
+\section{Couche 3 — Hyperviseurs}
+Deux générations d'hyperviseurs coexistent dans le temps.
+
+\subsection{Phase transitoire — Proxmox VE}
+Proxmox VE est retenu pour la phase transitoire. Il fournit :
+\begin{itemize}
+  \item Une interface simple pour administrer les VM.
+  \item Une gestion des backups intégrée (Proxmox Backup Server optionnel).
+  \item Le support de ZFS pour le stockage local.
+  \item Une communauté active et une documentation abondante.
+\end{itemize}
+
+Proxmox est choisi pour sa simplicité, pas comme cible finale. Il est déployé en cluster sur les quatre R630, avec un quorum configuré.
+
+\subsection{Phase cible — OpenStack}
+OpenStack est retenu comme cible. Il fournit :
+\begin{itemize}
+  \item Un modèle multi-tenant natif (projets, utilisateurs, quotas).
+  \item Une API standard (accès programmatique par les étudiants).
+  \item Une isolation réseau par projet (Neutron).
+  \item Une gestion de volumes (Cinder) et d'images (Glance).
+  \item Un portail web (Horizon).
+\end{itemize}
+
+Voir chapitre~\ref{chap:compute} pour la spécification complète.
+
+\section{Couche 4 — Stockage}
+Trois options sont à l'étude, à trancher après l'audit.
+
+{\small
+\renewcommand{\arraystretch}{1.2}
+\begin{tabularx}{\textwidth}{@{}lXXl@{}}
+\toprule
+\textbf{Option} & \textbf{Avantages} & \textbf{Inconvénients} & \textbf{Conditions} \\
+\midrule
+Stockage local (ZFS, LVM) & Simple, rapide, pas de réseau dédié & Pas de tolérance à la panne d'un nœud & Acceptable en transitoire \\
+NFS / iSCSI sur baie & Centralisé, sauvegardable, mature & SPOF si une seule baie, réseau dédié requis & Si baie historique fonctionnelle \\
+Ceph & Distribué, tolérant aux pannes, intégré OpenStack & Complexe, réseau 10 GbE quasi obligatoire & Si 10 GbE disponible et $\geq 3$ nœuds dédiés \\
+\bottomrule
+\end{tabularx}
+}
+
+\begin{warnbox}[Position actuelle]
+Ceph n'est pas écarté, mais il n'est pas retenu. La décision dépendra de l'audit (débits switches, baies historiques, nombre de nœuds disponibles). La phase transitoire utilisera du stockage local pour éviter d'introduire une complexité prématurée.
+\end{warnbox}
+
+\section{Couche 5 — Services utilisateurs}
+Les services fournis aux utilisateurs finaux se répartissent en trois catégories.
+
+\begin{itemize}
+  \item \textbf{Infrastructure as a Service (IaaS)} — VM Linux, bases de données, environnements de développement, via OpenStack (Horizon, CLI, API).
+  \item \textbf{Services communs} — DNS, reverse proxy, VPN, supervision, ticketing, CI/CD partagé.
+  \item \textbf{Services spécialisés} — Cyberlabs isolés, environnements Kubernetes mutualisés, publication de services web.
+\end{itemize}
+
+\section{Flux logiques}
+Les flux suivants sont identifiés et doivent être filtrés par le SRX300 et/ou les security groups Neutron.
+
+\begin{tabularx}{\textwidth}{@{}llX@{}}
+\toprule
+\textbf{Source} & \textbf{Destination} & \textbf{Autorisation} \\
+\midrule
+Internet & DMZ (reverse proxy, VPN) & Ports 80/443, 1194/udp \\
+VPN étudiants & Réseau cloud (Horizon, API) & Ports 443 uniquement \\
+Étudiants & Projets OpenStack & Isolation par projet, sortie Internet contrôlée \\
+Cyberlabs & Internet & Aucune (isolé) \\
+Management & Tous les composants & Réseau dédié, VPN admin \\
+Compute & Stockage & Réseau dédié, MTU 9000 si possible \\
+\bottomrule
+\end{tabularx}
+
+\section{Choix technologiques — synthèse}
+\begin{tabularx}{\textwidth}{@{}lXl@{}}
+\toprule
+\textbf{Domaine} & \textbf{Choix} & \textbf{Statut} \\
+\midrule
+Hyperviseur transitoire & Proxmox VE & Décidé \\
+Hyperviseur cible & OpenStack (version à figer) & Décidé \\
+Firewall périmètre & Juniper SRX300 & Décidé (à confirmer modèle) \\
+Switching & Cisco administrable & Décidé \\
+Stockage transitoire & Local (ZFS/LVM) & Décidé \\
+Stockage cible & Ceph ou baie historique & À trancher après audit \\
+Orchestration quotas & Outil custom (voir chap.~\ref{chap:orchestration}) & Décidé \\
+Backup & PBS (Proxmox), Restic/Borg (OpenStack) & À figer \\
+Supervision & Prometheus + Grafana + Loki & À figer \\
+Ticketing & À choisir & À figer \\
+\bottomrule
+\end{tabularx}

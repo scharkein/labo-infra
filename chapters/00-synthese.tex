@@ -1,0 +1,56 @@
+\chapter{Synthèse et principes directeurs}
+\label{chap:synthese}
+
+\section{Objet}
+Ce document constitue le dossier d'architecture du cloud privé de l'école. Il couvre l'architecture physique, le réseau, le calcul, le stockage, la sécurité, la gouvernance des ressources et la trajectoire de déploiement.
+
+Il est structuré en trois niveaux : une synthèse (ce chapitre), des principes de haut niveau (HLD, chapitre~\ref{chap:hld}), et des spécifications détaillées (LLD, chapitres~\ref{chap:reseau} à \ref{chap:securite}). Les chapitres de dimensionnement, déploiement, exploitation et justification sont traités séparément.
+
+\section{Principe directeur \#1 — Ne pas mélanger transitoire et cible}
+La plateforme transitoire (quatre R630 sous Proxmox) et la plateforme cible (OpenStack sur salle serveur historique) sont deux projets distincts.
+
+\begin{infobox}[Règle structurante]
+Aucune décision d'architecture de la cible ne doit dépendre de la configuration actuelle des R630. Inversement, la plateforme transitoire ne doit pas être dimensionnée comme si elle devait, à elle seule, reproduire la capacité historique de 500 utilisateurs.
+\end{infobox}
+
+\section{Principe directeur \#2 — Trajectoire progressive avec jalons}
+Chaque phase a un objectif clair, un critère de validation et un livrable. On ne passe pas à la phase suivante sans avoir validé les critères de la précédente.
+
+\begin{tabularx}{\textwidth}{@{}llXl@{}}
+\toprule
+\textbf{Phase} & \textbf{Durée} & \textbf{Objectif} & \textbf{Jalon} \\
+\midrule
+0 — Audit & 2 sem. & Inventaire complet de l'existant & Rapport d'audit \\
+1 — Transitoire & 1–2 mois & Proxmox opérationnel sur R630 & Plateforme stable \\
+2 — Labo OpenStack & 3–4 mois & OpenStack fonctionnel en VM & Premiers tests de quotas \\
+3 — Pilote & 3–6 mois & Ouverture à 1–2 groupes réels & Retour d'usage \\
+4 — Reconstruction & 6–12 mois & Salle serveur historique remise en service & OpenStack bare metal \\
+5 — Production & Continu & Ouverture à tous les élèves & Recette utilisateur \\
+\bottomrule
+\end{tabularx}
+
+\section{Principe directeur \#3 — Sécurité par défaut}
+L'infrastructure est segmentée dès la conception. Aucun flux n'est autorisé implicitement entre zones. Le management est inaccessible depuis les réseaux étudiants. Les cyberlabs sont isolés physiquement (VLAN) et logiquement (Neutron security groups + firewall).
+
+\section{Principe directeur \#4 — Résilience raisonnée}
+L'objectif de disponibilité est raisonné, pas maximal. On vise :
+\begin{itemize}
+  \item Redémarrage automatique des VM après panne d'un nœud compute (Proxmox HA, Nova evacuate).
+  \item Redondance des services de contrôle OpenStack (3 nœuds si possible).
+  \item Tolérance à la perte d'un nœud de stockage (quand la cible sera définie).
+  \item Redondance réseau sur les liens critiques (LACP sur les switches Cisco).
+  \item PRA sur un site distant non requis au démarrage, mais à prévoir.
+\end{itemize}
+
+On n'essaie pas d'atteindre un SLA de 99,99\% : l'infrastructure doit être résiliente mais aussi maintenable par une personne, ce qui exclut les architectures nécessitant une équipe d'astreinte.
+
+\section{Principe directeur \#5 — Exploitabilité par une personne}
+Chaque composant doit pouvoir être diagnostiqué, réparé et remplacé par une seule personne formée. Cela exclut les choix nécessitant une équipe d'experts, mais n'exclut pas les architectures complexes si elles sont outillées et documentées.
+
+\section{Principe directeur \#6 — Coût maîtrisé}
+Le coût d'exploitation (temps humain, énergie, licences) est aussi important que le coût d'acquisition. Une architecture nécessitant 20 heures de maintenance par mois est plus chère qu'une architecture coûtant 10k€ de plus mais 2 heures par mois.
+
+\section{Ce que ce dossier n'est pas}
+Ce dossier n'est pas une roadmap d'apprentissage OpenStack. Il suppose que l'équipe se forme en parallèle, pendant la phase de laboratoire. Il ne documente pas les procédures d'apprentissage.
+
+Ce dossier n'est pas non plus une garantie de budget. Il propose des scénarios et documente les choix, mais chaque achat devra être validé par la direction.

@@ -1,0 +1,60 @@
+\chapter{LLD — Calcul et hyperviseurs}
+\label{chap:compute}
+
+\begin{todobox}[Chapitre à compléter après identification des CPU et cartes réseau]
+Les modèles exacts de CPU et de cartes réseau des R630 ne sont pas encore connus. Ce chapitre présente les décisions déjà prises et les points à compléter.
+\end{todobox}
+
+\section{Phase transitoire — Proxmox VE sur R630}
+\subsection{Architecture}
+\begin{itemize}
+  \item Cluster Proxmox VE 8 sur les quatre R630.
+  \item Quorum configuré (nœuds impairs ou QDevice sur une VM de management).
+  \item Réseau de management sur VLAN 10.
+  \item Réseau de VM sur VLAN 20 (bridge vmbr1).
+  \item Réseau de migration sur VLAN 40 (bridge vmbr2, dédié).
+  \item Stockage local ZFS en miroir (RAIDZ1 ou miroir selon le nombre de disques).
+  \item Backups via Proxmox Backup Server (VM dédiée ou serveur historique si réutilisable).
+\end{itemize}
+
+\subsection{Rôles des quatre nœuds}
+\begin{todobox}[À finaliser après audit]
+Selon les CPU et la RAM installés, répartir les rôles :
+\begin{itemize}
+  \item \texttt{pve01} — nœud principal, héberge la majorité des VM de service.
+  \item \texttt{pve02} — nœud secondaire, redondance des VM critiques.
+  \item \texttt{pve03} — nœud pour le labo OpenStack (VMs OpenStack en nested virtualization).
+  \item \texttt{pve04} — nœud pour les services utilisateurs (pilote).
+\end{itemize}
+La répartition définitive dépendra des capacités installées.
+\end{todobox}
+
+\subsection{Labo OpenStack sur Proxmox}
+\begin{itemize}
+  \item Déployer trois VM « contrôleurs » (2 vCPU, 8 Go RAM, 40 Go disque).
+  \item Déployer deux VM « compute » (4 vCPU, 16 Go RAM, 100 Go disque).
+  \item Un réseau de management dédié (VLAN interne Proxmox, non routé).
+  \item Un réseau de stockage dédié.
+  \item Installer OpenStack via Kolla-Ansible (recommandé) ou DevStack (déconseillé pour cause de non-persistance).
+\end{itemize}
+
+\begin{infobox}[Choix Kolla-Ansible]
+Kolla-Ansible est retenu pour le labo et pour la production. Il est mature, containerisé, reproductible, et permet de mutualiser les procédures entre les deux phases.
+\end{infobox}
+
+\section{Phase cible — OpenStack bare metal}
+\subsection{Rôles}
+\begin{tabularx}{\textwidth}{@{}lX@{}}
+\toprule
+\textbf{Rôle} & \textbf{Description} \\
+\midrule
+Controller & Keystone, Nova API, Neutron server, Glance API, Cinder API, Horizon ($\times 3$ pour HA) \\
+Compute    & Nova compute, Neutron agent, Ceph OSD (si convergé) \\
+Storage    & Ceph OSD ou nœuds Cinder dédiés selon l'option retenue \\
+Network    & Neutron L3 agent si DVR non retenu \\
+\bottomrule
+\end{tabularx}
+
+\begin{todobox}[À finaliser après audit serveurs historiques]
+La répartition dépendra du nombre de serveurs historiques, de leur RAM, de leurs CPU et de leurs disques. La cible peut être totalement ou partiellement convergée.
+\end{todobox}

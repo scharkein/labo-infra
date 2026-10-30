@@ -1,0 +1,31 @@
+\resizebox{\textwidth}{!}{%
+\begin{tikzpicture}[
+  node distance=1.2cm and 2cm,
+  box/.style={rectangle, rounded corners, draw, thick, minimum width=3cm,
+    minimum height=1.2cm, align=center, font=\small, fill=lightgray},
+  fw/.style={box, fill=warning!20},
+  sw/.style={box, fill=secondary!20},
+  srv/.style={box, fill=success!15},
+  pub/.style={box, fill=accent!20},
+  >=Stealth
+]
+  \node[pub] (inet) {Internet};
+  \node[pub, below=of inet] (isp) {Opérateur\\fibre};
+
+  \node[fw, below=of isp, minimum width=4cm] (srx) {Juniper SRX300\\NAT / VPN / Filtrage};
+
+  \node[sw, below left=of srx, xshift=-1cm] (sw1) {Switch Cisco 1};
+  \node[sw, below right=of srx, xshift=1cm] (sw2) {Switch Cisco 2};
+
+  \node[srv, below=of sw1] (r630) {R630 $\times 4$\\Proxmox (transitoire)};
+  \node[srv, below=of sw2] (hist) {Serveurs\\historiques};
+
+  \draw[->, thick] (inet) -- (isp);
+  \draw[->, thick] (isp) -- node[right]{fibre} (srx);
+  \draw[<->, thick] (srx) -- (sw1);
+  \draw[<->, thick] (srx) -- (sw2);
+  \draw[<->, thick] (sw1) -- node[left, align=center]{VLAN\\10/20/40} (r630);
+  \draw[<->, thick] (sw2) -- node[right, align=center]{VLAN\\10/20/30} (hist);
+  \draw[<->, thick, dashed] (sw1) -- node[above]{trunk LACP} (sw2);
+\end{tikzpicture}%
+}

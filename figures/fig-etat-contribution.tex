@@ -1,0 +1,19 @@
+\begin{tikzpicture}[
+  >=Stealth, node distance=4.2cm and 6.5cm,
+  state/.style={rectangle, rounded corners, draw, thick,
+    minimum width=3.6cm, minimum height=1.4cm, align=center, font=\small},
+  every edge/.style={draw, ->, thick},
+  every edge quotes/.style={auto, font=\footnotesize, align=center}
+]
+  \node[state, fill=success!15]  (committed) {\textbf{COMMITTED}\\\footnotesize membre actif};
+  \node[state, right=of committed, fill=accent!20] (pending)
+    {\textbf{RELEASE\_PENDING}\\\footnotesize quota gelé};
+  \node[state, below=of committed, fill=secondary!15] (released)
+    {\textbf{RELEASED}\\\footnotesize quota restitué};
+
+  \path[->]
+    (committed) edge[bend left=15] node[above, align=center]{départ\\$U > L'$} (pending)
+    (pending)   edge[bend left=15] node[below, align=center]{réintégration} (committed)
+    (committed) edge node[left, align=center]{départ\\$U \leq L'$} (released)
+    (pending)   edge node[right, align=center]{$U \leq L'$\\ou groupe supprimé} (released);
+\end{tikzpicture}

@@ -1,0 +1,39 @@
+\chapter{Dimensionnement}
+\label{chap:dimensionnement}
+
+\begin{todobox}[Chapitre à compléter après audit]
+Les modèles exacts de CPU, le nombre de disques et la RAM installée des R630, ainsi que l'inventaire des serveurs historiques, sont nécessaires pour finaliser ce chapitre.
+\end{todobox}
+
+\section{Méthodologie}
+Le dimensionnement suit une logique N+1 : la perte d'un nœud ne doit pas entraîner la perte définitive des workloads. Le dimensionnement utile est calculé après réservation des ressources système et après tolérance à la panne.
+
+\section{Formules}
+\begin{itemize}
+  \item \textbf{Capacité brute} : somme des ressources de tous les nœuds.
+  \item \textbf{Capacité système} : réservation hyperviseur (10–15\% CPU, 4–8 Go RAM par nœud).
+  \item \textbf{Capacité utile N+1} : capacité système $\times$ (N-1)/N.
+  \item \textbf{Overcommit} : ratio CPU (2–4$\times$) et RAM (1,0–1,5$\times$).
+\end{itemize}
+
+\section{Hypothèses de profils VM}
+\begin{tabularx}{\textwidth}{@{}lrrrX@{}}
+\toprule
+\textbf{Profil} & \textbf{vCPU} & \textbf{RAM} & \textbf{Disque} & \textbf{Exemple} \\
+\midrule
+Petite Linux      & 1 & 2 Go  & 20 Go  & TP, dev \\
+Standard Linux    & 2 & 4 Go  & 40 Go  & App web, DB légère \\
+Développement     & 4 & 8 Go  & 60 Go  & IDE, build \\
+Base de données   & 4 & 16 Go & 100 Go & PostgreSQL, MariaDB \\
+Kubernetes / CI   & 4–8 & 16 Go & 100 Go & Cluster de test \\
+\bottomrule
+\end{tabularx}
+
+\section{Scénarios à chiffrer}
+\begin{todobox}[À produire]
+\begin{itemize}
+  \item Scénario minimal : 4 R630, X Go RAM, Y disques, Z VMs.
+  \item Scénario cible : serveurs historiques, capacité annoncée 500 utilisateurs.
+  \item Scénario intermédiaire : ajout de RAM et disques aux R630.
+\end{itemize}
+\end{todobox}

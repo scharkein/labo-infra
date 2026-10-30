@@ -1,0 +1,33 @@
+\begin{tikzpicture}[
+  node distance=1cm and 1.5cm,
+  svc/.style={rectangle, rounded corners, draw, thick, minimum width=2.4cm,
+    minimum height=1cm, align=center, font=\footnotesize},
+  core/.style={svc, fill=primary!15},
+  compute/.style={svc, fill=success!15},
+  net/.style={svc, fill=secondary!20},
+  storage/.style={svc, fill=accent!20},
+  ui/.style={svc, fill=warning!15},
+  >=Stealth
+]
+  \node[ui] (horizon) {Horizon};
+
+  \node[core, below=of horizon] (keystone) {Keystone};
+
+  \node[compute, below left=of keystone] (nova) {Nova};
+  \node[net, below=of keystone] (neutron) {Neutron};
+  \node[storage, below right=of keystone] (cinder) {Cinder};
+
+  \node[storage, below=of cinder] (glance) {Glance};
+  \node[net, below=of neutron] (vxlan) {VXLAN\\(Neutron)};
+  \node[compute, below=of nova] (vms) {VMs};
+
+  \draw[<->] (horizon) -- (keystone);
+  \draw[<->] (keystone) -- (nova);
+  \draw[<->] (keystone) -- (neutron);
+  \draw[<->] (keystone) -- (cinder);
+  \draw[<->] (nova) -- (vms);
+  \draw[<->] (neutron) -- (vxlan);
+  \draw[<->] (nova) -- (glance);
+  \draw[<->] (nova) -- (cinder);
+  \draw[<->] (vms) -- (vxlan);
+\end{tikzpicture}

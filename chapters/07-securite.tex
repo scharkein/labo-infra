@@ -1,0 +1,109 @@
+\chapter{Sécurité}
+\label{chap:securite}
+
+\section{Principes}
+\begin{itemize}
+  \item Deny by default sur tous les flux.
+  \item Séparation des zones par VLAN et par firewall.
+  \item Isolation stricte des tenants OpenStack.
+  \item Séparation des cyberlabs du reste de l'infrastructure.
+  \item Principe du moindre privilège pour tous les comptes.
+  \item Traçabilité : journal d'audit, centralisation des logs.
+\end{itemize}
+
+\section{Identité et accès}
+\subsection{Comptes}
+\begin{tabularx}{\textwidth}{@{}lX@{}}
+\toprule
+\textbf{Type de compte} & \textbf{Usage} \\
+\midrule
+Utilisateur étudiant & Projet individuel, membres de groupes \\
+Utilisateur enseignant & Projet individuel + droit de lecture sur les groupes \\
+Administrateur système & Accès management, création de projets, modification de quotas \\
+Compte de service & Utilisé par l'orchestration pour piloter OpenStack \\
+Compte d'urgence & Accès hors bande (iDRAC, console) en cas de perte d'accès \\
+\bottomrule
+\end{tabularx}
+
+\subsection{Authentification}
+\begin{itemize}
+  \item Keystone pour OpenStack.
+  \item Intégration LDAP/AD de l'école si l'annuaire existe (recommandé).
+  \item MFA pour les comptes administrateurs (TOTP via FreeOTP ou équivalent).
+  \item Séparation des domaines Keystone : \texttt{default} (admin), \texttt{students}, \texttt{teachers}.
+\end{itemize}
+
+\section{Segmentation réseau}
+Voir chapitre~\ref{chap:reseau}. Résumé :
+\begin{itemize}
+  \item Management isolé, accessible uniquement depuis ADMIN ou VPN admin.
+  \item Étudiants sur VLAN 60 (VPN) et sur les réseaux tenant OpenStack.
+  \item Cyberlabs sur VLAN 80, sans accès Internet par défaut.
+  \item DMZ sur VLAN 50, accessible depuis Internet sur ports 80/443 et VPN uniquement.
+\end{itemize}
+
+\section{Isolation multi-tenant OpenStack}
+\begin{itemize}
+  \item Chaque projet OpenStack a son propre réseau Neutron (VXLAN).
+  \item Security groups stricts par projet.
+  \item Pas de réseau partagé entre projets sauf décision explicite de l'admin.
+  \item Floating IPs limitées (1 par projet individuel, 2 par groupe).
+  \item Pas d'accès des VMs étudiantes aux réseaux de management ou à l'API OpenStack (sauf Horizon en lecture).
+\end{itemize}
+
+\section{Cyberlabs}
+\begin{itemize}
+  \item Réseau Neutron dédié, isolé du reste.
+  \item Pas de sortie Internet par défaut (whitelist si nécessaire).
+  \item Pas d'accès aux volumes des autres projets.
+  \item Cycle de vie court (création et destruction à la demande).
+  \item Traçabilité des actions (audit log dédié).
+  \item Supervision en place pour détecter un comportement anormal (scan de ports, tentative d'évasion).
+\end{itemize}
+
+\begin{warnbox}[Point de vigilance cyberlabs]
+Un environnement volontairement vulnérable peut être utilisé comme point de départ d'une attaque vers le reste de l'infrastructure. Les précautions suivantes sont indispensables :
+\begin{itemize}
+  \item Aucun flux autorisé entre cyberlab et le reste du cloud.
+  \item Aucun flux autorisé entre cyberlab et le management.
+  \item Filtrage strict au niveau du SRX.
+  \item Limitation du débit et de la durée de vie.
+  \item Supervision renforcée.
+\end{itemize}
+\end{warnbox}
+
+\section{Protection des secrets}
+\begin{itemize}
+  \item Aucun secret en clair dans Git.
+  \item Vault (HashiCorp Vault ou Ansible Vault) pour les credentials de service.
+  \item Rotation des mots de passe critiques (admin, service accounts).
+  \item Séparation des clés SSH par rôle (pas de clé partagée).
+  \item Gestion des secrets OpenStack via Barbican si activé.
+\end{itemize}
+
+\section{Durcissement}
+\begin{itemize}
+  \item Serveurs : SSH par clé uniquement, pas de root direct, fail2ban, mises à jour automatiques de sécurité.
+  \item Hyperviseurs : accès iDRAC/iLO sur réseau dédié, mots de passe uniques, firmware à jour.
+  \item Switches et SRX : SSH uniquement, désactivation des services inutiles, ACL de management.
+  \item OpenStack : API derrière reverse proxy, TLS obligatoire, quotas stricts sur l'API.
+\end{itemize}
+
+\section{Supervision et détection}
+\begin{itemize}
+  \item Centralisation des logs (Loki ou syslog).
+  \item Alertes sur les événements critiques : échec d'authentification, modification de quota, création de projet, connexion admin.
+  \item Surveillance des flux réseau (NetFlow ou sFlow si disponible sur Cisco).
+  \item Surveillance des resources (Prometheus) : CPU, RAM, disque, réseau.
+  \item Revue périodique des comptes et des rôles.
+\end{itemize}
+
+\section{Sauvegardes et PRA}
+Voir chapitre~\ref{chap:exploitation} (Exploitation). Points clés :
+\begin{itemize}
+  \item Sauvegarde quotidienne des bases (PostgreSQL orchestration, MariaDB OpenStack).
+  \item Sauvegarde des configurations réseau (SRX, Cisco).
+  \item Sauvegarde des images et volumes critiques.
+  \item Test de restauration trimestriel.
+  \item PRA : sauvegarde off-site (cloud externe ou site distant).
+\end{itemize}

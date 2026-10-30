@@ -1,0 +1,36 @@
+\chapter*{Synthèse pour la direction}
+\addcontentsline{toc}{chapter}{Synthèse pour la direction}
+\markboth{Synthèse pour la direction}{}
+
+Ce dossier présente l'architecture cible du cloud privé de l'école, ainsi que la trajectoire technique et les investissements nécessaires pour le construire.
+
+\section*{Le contexte}
+L'école dispose d'une salle serveur historique dont l'infrastructure a été partiellement démontée par l'équipe précédente. Elle dispose également de quatre serveurs Dell PowerEdge R630 identiques, équipés de processeurs mais sans RAM ni disque. Ces quatre machines constituent une plateforme transitoire et un environnement de formation, mais ne permettront pas, à elles seules, de reconstruire la capacité historique (au moins 500 utilisateurs simultanés).
+
+\section*{La stratégie retenue}
+La trajectoire se décompose en trois étapes.
+
+\begin{enumerate}
+  \item \textbf{Phase transitoire (3 à 6 mois)} — Quatre R630 sous Proxmox VE pour fournir les premiers services, apprendre OpenStack en laboratoire, et collecter les métriques d'usage réelles.
+  \item \textbf{Phase pilote (6 à 12 mois)} — Ouverture à quelques groupes d'étudiants, validation du modèle de quotas, consolidation de l'exploitation.
+  \item \textbf{Phase cible (12 à 24 mois)} — Reconstruction de la salle serveur historique et déploiement d'OpenStack bare metal, dimensionné pour l'ensemble des élèves et des associations.
+\end{enumerate}
+
+\section*{Les décisions structurantes}
+\begin{itemize}
+  \item Le réseau est segmenté en zones (management, calcul, stockage, DMZ, VPN, isolation cyberlabs), derrière un firewall Juniper SRX300 et des switches Cisco administrables.
+  \item Le modèle de gouvernance des quotas est le \emph{modèle C} : chaque étudiant contribue une partie de son quota individuel à un projet de groupe, de manière réversible, avec un mécanisme anti-abus qui gèle la contribution tant que le groupe reste au-dessus de sa nouvelle limite.
+  \item La plateforme cible est OpenStack, déployé sur l'infrastructure historique reconstruite.
+  \item La phase transitoire ne préempte aucune décision de la cible : elle est conçue pour être remplacée sans dette technique majeure.
+\end{itemize}
+
+\section*{Ce que ce dossier permet}
+Ce dossier sert à trois choses.
+\begin{itemize}
+  \item Justifier techniquement les achats (RAM, disques, réseau) soumis à la direction.
+  \item Servir de référence d'exploitation pour l'équipe en place.
+  \item Documenter les choix et leurs alternatives pour permettre à un futur architecte de reprendre le dossier sans reconstruire.
+\end{itemize}
+
+\section*{Ce qui reste à préciser}
+Certains éléments dépendent d'un audit physique de la salle serveur, à réaliser dans les deux semaines. Ils concernent notamment : les modèles exacts de processeurs et cartes réseau des R630, l'état des baies de stockage historiques, le modèle exact du SRX300, et la configuration des switches Cisco. Les chapitres correspondants marquent explicitement ces zones en attente d'information.

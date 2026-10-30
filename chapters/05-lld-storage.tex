@@ -1,0 +1,54 @@
+\chapter{LLD — Stockage}
+\label{chap:storage}
+
+\begin{todobox}[Chapitre à compléter après audit des baies et disques]
+Les options de stockage cible dépendent de l'audit (baies historiques, disques R630 disponibles, débits réseau).
+\end{todobox}
+
+\section{Besoins}
+\begin{tabularx}{\textwidth}{@{}lXl@{}}
+\toprule
+\textbf{Besoin} & \textbf{Description} & \textbf{Criticité} \\
+\midrule
+Disques système VM & Images racine, volume de boot & Élevée \\
+Volumes persistants & Données utilisateurs, bases & Élevée \\
+Images système & Templates OS, snapshots de base & Moyenne \\
+Snapshots & Sauvegardes rapides, rollback & Moyenne \\
+Sauvegardes & Rétention long terme, PRA & Élevée (off-site) \\
+\bottomrule
+\end{tabularx}
+
+\section{Options pour la phase transitoire}
+\begin{tabularx}{\textwidth}{@{}lXX@{}}
+\toprule
+\textbf{Option} & \textbf{Avantages} & \textbf{Inconvénients} \\
+\midrule
+ZFS local par nœud & Simple, snapshots natifs, compression & Pas de HA, réplication manuelle \\
+ZFS + réplication async & HA légère (RPO > 0) & Complexité modérée, pas de HA temps réel \\
+NFS sur VM dédiée & Centralisé, simple & SPOF \\
+Proxmox Backup Server & Sauvegardes complètes, déduplication & Ajoute un serveur \\
+\bottomrule
+\end{tabularx}
+
+\section{Décision pour la phase transitoire}
+\begin{okbox}[Choix retenu]
+ZFS local sur chaque nœud, avec réplication asynchrone (pvesr) des VM critiques vers un nœud secondaire. Proxmox Backup Server déployé sur une VM dédiée (ou sur un serveur historique si récupérable) pour les sauvegardes complètes.
+\end{okbox}
+
+\section{Cible — scénarios à trancher après audit}
+\begin{enumerate}
+  \item \textbf{Scénario A — Baie SAN/NAS historique réutilisable} : Cinder avec driver iSCSI/NFS, sans Ceph.
+  \item \textbf{Scénario B — Ceph sur serveurs historiques} : si 10 GbE disponible et $\geq 3$ nœuds dédiés, Ceph pour volumes + images + Cinder backend.
+  \item \textbf{Scénario C — Ceph hyperconvergé} : Ceph sur les nœuds compute (3+ nœuds), avec réseau 10/25 GbE.
+  \item \textbf{Scénario D — Stockage local + réplication} : si aucun des précédents, réplication applicative par projet.
+\end{enumerate}
+
+\begin{warnbox}[Point de décision structurant]
+Le choix Ceph ou non impacte :
+\begin{itemize}
+  \item Le nombre de nœuds nécessaires ($\geq 3$, idéalement $\geq 5$ pour la production).
+  \item Le besoin en 10 GbE (quasi obligatoire pour la performance).
+  \item La complexité d'exploitation (Ceph est puissant mais exigeant).
+  \item Le RPO/RTO (Ceph répliqué vs stockage local non répliqué).
+\end{itemize}
+\end{warnbox}

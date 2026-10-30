@@ -1,0 +1,172 @@
+\chapter{LLD — Orchestration des quotas}
+\label{chap:orchestration}
+
+\section{Objet}
+Ce chapitre spécifie le modèle de transfert réversible de quota individuel vers un projet de groupe, retenu comme modèle cible de gouvernance des ressources pour les étudiants.
+
+\section{Modèle retenu — Modèle C}
+\begin{infobox}[Modèle de transfert de quota — Modèle C]
+\begin{enumerate}
+  \item Chaque étudiant dispose d'un projet Keystone individuel avec un quota standard.
+  \item Un groupe est un projet Keystone séparé, dont le quota est la somme dynamique des contributions de ses membres.
+  \item Un étudiant contribue une partie de son quota \textbf{libre} à un ou plusieurs groupes, dans la limite de son quota individuel.
+  \item La contribution est réversible : restituée lorsque le groupe repasse sous la nouvelle limite, ou lors de la suppression du groupe.
+  \item Tant que le groupe reste au-dessus de la nouvelle limite, la contribution est \textbf{gelée}.
+\end{enumerate}
+\end{infobox}
+
+\section{Règle de gel — anti-abus}
+Soit :
+\begin{itemize}
+  \item $L$ : ancienne limite du groupe (somme des contributions actives).
+  \item $c$ : contribution du partant.
+  \item $L' = L - c$ : nouvelle limite.
+  \item $U$ : usage courant du groupe (vCPU effectivement consommés).
+\end{itemize}
+
+\begin{tabularx}{\textwidth}{@{}lXX@{}}
+\toprule
+\textbf{Condition} & \textbf{État contribution} & \textbf{Quota étudiant} \\
+\midrule
+$U \leq L'$ & \texttt{RELEASED} immédiatement & Restitué \\
+$U > L'$    & \texttt{RELEASE\_PENDING} & Gelé (non restitué) \\
+\bottomrule
+\end{tabularx}
+
+La libération n'est jamais partielle : soit les $c$ vCPU sont entièrement restitués, soit ils restent entièrement gelés.
+
+\section{Modèle de données}
+\begin{lstlisting}[language=SQL, caption={Schéma PostgreSQL}]
+CREATE TABLE student (
+  id                  UUID PRIMARY KEY,
+  login               VARCHAR(64)  UNIQUE NOT NULL,
+  email               VARCHAR(255),
+  keystone_user_id    UUID NOT NULL,
+  keystone_project_id UUID NOT NULL,
+  quota_vcpu          INTEGER NOT NULL DEFAULT 4,
+  quota_ram_mb        INTEGER NOT NULL DEFAULT 8192,
+  quota_disk_gb       INTEGER NOT NULL DEFAULT 100,
+  state               VARCHAR(16) NOT NULL DEFAULT 'ACTIVE',
+  created_at          TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE grp (
+  id                  UUID PRIMARY KEY,
+  name                VARCHAR(128) NOT NULL,
+  keystone_project_id UUID NOT NULL,
+  state               VARCHAR(16) NOT NULL DEFAULT 'ACTIVE',
+  created_at          TIMESTAMPTZ NOT NULL DEFAULT now(),
+  pending_delete_at   TIMESTAMPTZ,
+  deleted_at          TIMESTAMPTZ
+);
+
+CREATE TABLE contribution (
+  id                   UUID PRIMARY KEY,
+  student_id           UUID NOT NULL REFERENCES student(id),
+  group_id             UUID NOT NULL REFERENCES grp(id),
+  vcpu                 INTEGER NOT NULL CHECK (vcpu > 0),
+  ram_mb               INTEGER NOT NULL CHECK (ram_mb > 0),
+  disk_gb              INTEGER NOT NULL CHECK (disk_gb > 0),
+  state                VARCHAR(24) NOT NULL DEFAULT 'COMMITTED',
+  created_at           TIMESTAMPTZ NOT NULL DEFAULT now(),
+  release_requested_at TIMESTAMPTZ,
+  released_at          TIMESTAMPTZ,
+  release_reason       VARCHAR(64)
+);
+
+CREATE TABLE audit_log (
+  id            BIGSERIAL PRIMARY KEY,
+  ts            TIMESTAMPTZ NOT NULL DEFAULT now(),
+  actor         VARCHAR(128),
+  action        VARCHAR(64) NOT NULL,
+  entity_type   VARCHAR(32) NOT NULL,
+  entity_id     UUID NOT NULL,
+  before_state  JSONB,
+  after_state   JSONB,
+  result        VARCHAR(16) NOT NULL,
+  error_message TEXT
+);
+\end{lstlisting}
+
+\section{Machines à états}
+\begin{figure}[htbp]
+\centering
+\input{figures/fig-etat-contribution}
+\caption{Machine à états d'une contribution.}
+\label{fig:etat-contribution}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\input{figures/fig-etat-groupe}
+\caption{Machine à états d'un groupe.}
+\label{fig:etat-groupe}
+\end{figure}
+
+\section{Invariants}
+\begin{enumerate}
+  \item \textbf{Étudiant} — $\sum$ contributions actives $\leq$ quota individuel.
+  \item \textbf{Contribution} — On ne contribue que du quota libre : usage + contributions + nouvelle $\leq$ quota.
+  \item \textbf{Groupe} — Le quota du groupe est exactement la somme de ses contributions actives.
+  \item \textbf{OpenStack} — Les quotas appliqués à chaque mutation sont recalculés depuis la base.
+  \item \textbf{Restitution} — Une contribution en \texttt{RELEASE\_PENDING} bascule en \texttt{RELEASED} en bloc, jamais partiellement.
+\end{enumerate}
+
+\begin{infobox}[Nature du quota transféré]
+Le quota transféré est un quota \textbf{logique}, pas une réservation physique. OpenStack gère l'overcommit via ses ratios. La contribution transfère un droit de créer des instances, pas des cœurs physiques.
+\end{infobox}
+
+\section{API d'orchestration}
+\begin{tabularx}{\textwidth}{@{}lllX@{}}
+\toprule
+\textbf{Méthode} & \textbf{Chemin} & \textbf{Rôle} & \textbf{Description} \\
+\midrule
+POST   & /students                                 & admin        & Créer étudiant \\
+GET    & /students/\{id\}/available                & self / admin & Quota libre contribuable \\
+POST   & /groups                                   & student      & Créer groupe + contribution \\
+POST   & /groups/\{id\}/contributions              & student      & Rejoindre un groupe \\
+DELETE & /groups/\{id\}/contributions/\{cid\}      & self / admin & Quitter le groupe \\
+POST   & /groups/\{id\}/contributions/\{cid\}/rejoin & self       & Réintégration \\
+GET    & /groups/\{id\}/usage                      & member / admin & Usage et quota du groupe \\
+POST   & /admin/groups/\{id\}/force-release/\{cid\} & admin       & Libération forcée (escalade) \\
+GET    & /audit                                    & admin        & Journal d'audit \\
+\bottomrule
+\end{tabularx}
+
+\section{Jobs de fond}
+\begin{tabularx}{\textwidth}{@{}lXl@{}}
+\toprule
+\textbf{Job} & \textbf{Rôle} & \textbf{Fréquence} \\
+\midrule
+reconcile\_quota\_drift    & Compare DB et OpenStack, corrige les écarts & 15 min \\
+check\_release\_pending    & Bascule en \texttt{RELEASED} si $U \leq L'$ & 5 min \\
+check\_group\_dissolution  & Gère le délai 30 j des \texttt{PENDING\_DELETE} & 1 h \\
+notify\_pending\_release   & Notifications J+0, J+7, J+14 & 1×/jour \\
+expire\_groups             & Nettoyage et purge des contributions anciennes & 1×/jour \\
+\bottomrule
+\end{tabularx}
+
+\section{Cohérence et réconciliation}
+Pattern outbox : la transaction DB écrit la contribution et un enregistrement outbox. Un worker consomme l'outbox et applique l'action OpenStack. En cas d'échec : retry avec backoff (5 max), puis alerte. Job périodique de réconciliation pour les écarts résiduels.
+
+\begin{okbox}[Garantie]
+Aucune écriture OpenStack sans enregistrement outbox préalable. Aucune contribution considérée appliquée tant que l'outbox n'est pas \texttt{DONE}.
+\end{okbox}
+
+\section{Sécurité et déploiement}
+\begin{itemize}
+  \item Compte de service OpenStack stocké dans un vault.
+  \item API exposée uniquement sur le management, derrière SRX + VPN.
+  \item Rate limiting : 10 req/min par étudiant sur les contributions.
+  \item Journal d'audit exhaustif.
+\end{itemize}
+
+\begin{tabularx}{\textwidth}{@{}lrrrX@{}}
+\toprule
+\textbf{Composant} & \textbf{vCPU} & \textbf{RAM} & \textbf{Disque} & \textbf{Remarque} \\
+\midrule
+VM management (API + worker + Redis) & 2 & 4 Go & 40 Go & Phase pilote \\
+PostgreSQL                            & 2 & 4 Go & 80 Go & Séparer en production \\
+Worker Celery                         & 1 & 2 Go & 20 Go & Cohabite en pilote \\
+\bottomrule
+\end{tabularx}

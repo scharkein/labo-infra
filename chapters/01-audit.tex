@@ -1,0 +1,140 @@
+\chapter{Audit et inventaire de l'existant}
+\label{chap:audit}
+
+\begin{todobox}[Chapitre à compléter après la visite de site]
+Ce chapitre contient la méthodologie d'audit et la checklist à remplir. Les résultats sont à intégrer à l'issue de la visite prévue dans les deux semaines.
+\end{todobox}
+
+\section{Objectif de l'audit}
+L'audit a pour objectif de produire un inventaire exhaustif et fiable de l'infrastructure physique, réseau et stockage existante, afin de déterminer :
+\begin{itemize}
+  \item Ce qui peut être réutilisé dans la plateforme cible.
+  \item Ce qui doit être remplacé.
+  \item Ce qui manque pour atteindre le dimensionnement cible.
+\end{itemize}
+
+\begin{warnbox}[Règle de sécurité]
+Aucune action destructive ne doit être réalisée pendant l'audit. Ne pas démarrer, éteindre, débrancher ou modifier la configuration d'un équipement sans autorisation explicite et sans avoir identifié son rôle potentiel.
+\end{warnbox}
+
+\section{Checklist — visite de site}
+
+\subsection{Inventaire physique — serveurs}
+\begin{longtable}{@{}p{0.5cm}p{5cm}p{4.5cm}p{3.5cm}@{}}
+\toprule
+\textbf{\#} & \textbf{Action} & \textbf{Relevé} & \textbf{Commentaire} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{\#} & \textbf{Action (suite)} & \textbf{Relevé} & \textbf{Commentaire} \\
+\midrule
+\endhead
+\midrule
+\multicolumn{4}{r}{\footnotesize\itshape Suite page suivante \ldots} \\
+\endfoot
+\bottomrule
+\endlastfoot
+1 & Photographier chaque serveur (face avant, arrière, étiquette de service) & \todo & \\
+2 & Relever marque, modèle, numéro de série & \todo & \\
+3 & Identifier les CPUs (référence, nombre de sockets, cœurs) & \todo & \\
+4 & Relever la quantité et le type de RAM installée & \todo & \\
+5 & Identifier le contrôleur RAID/HBA (modèle, firmware) & \todo & \\
+6 & Relever le nombre de baies et le type (2,5" / 3,5") & \todo & \\
+7 & Identifier les disques installés (référence, taille, état SMART) & \todo & \\
+8 & Relever les cartes réseau (nombre de ports, débit, fabricant) & \todo & \\
+9 & Identifier la fonction de gestion (iDRAC, iLO) et l'adresse IP & \todo & \\
+10 & Vérifier les alimentations (nombre, état, raccordement) & \todo & \\
+11 & Vérifier si le serveur est allumé et son état (LED) & \todo & \\
+12 & Vérifier si les données sont présentes ou si les disques sont vierges & \todo & \\
+\end{longtable}
+
+\subsection{Inventaire physique — stockage}
+\begin{longtable}{@{}p{0.5cm}p{5cm}p{4.5cm}p{3.5cm}@{}}
+\toprule
+\textbf{\#} & \textbf{Action} & \textbf{Relevé} & \textbf{Commentaire} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{\#} & \textbf{Action (suite)} & \textbf{Relevé} & \textbf{Commentaire} \\
+\midrule
+\endhead
+\midrule
+\multicolumn{4}{r}{\footnotesize\itshape Suite page suivante \ldots} \\
+\endfoot
+\bottomrule
+\endlastfoot
+13 & Identifier les baies de stockage (marque, modèle) & \todo & \\
+14 & Relever la connectique (SAS, FC, iSCSI, NFS) & \todo & \\
+15 & Vérifier l'état (allumée, éteinte, LED) & \todo & \\
+16 & Identifier les disques installés et leur état & \todo & \\
+17 & Récupérer la configuration si possible (via console) & \todo & \\
+18 & Vérifier si des données sont présentes & \todo & \\
+\end{longtable}
+
+\subsection{Inventaire physique — réseau}
+\begin{longtable}{@{}p{0.5cm}p{5cm}p{4.5cm}p{3.5cm}@{}}
+\toprule
+\textbf{\#} & \textbf{Action} & \textbf{Relevé} & \textbf{Commentaire} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{\#} & \textbf{Action (suite)} & \textbf{Relevé} & \textbf{Commentaire} \\
+\midrule
+\endhead
+\midrule
+\multicolumn{4}{r}{\footnotesize\itshape Suite page suivante \ldots} \\
+\endfoot
+\bottomrule
+\endlastfoot
+19 & Identifier le firewall Juniper (modèle exact, version JunOS) & SRX300 (à confirmer) & \\
+20 & Relever la configuration actuelle du SRX (si accessible) & \todo & \\
+21 & Identifier les switches Cisco (modèle, nombre de ports, débit) & \todo & \\
+22 & Vérifier si les switches sont administrables (SSH, console) & Oui (confirmé) & \\
+23 & Relever la configuration actuelle (VLANs, trunks, LACP) & \todo & \\
+24 & Identifier l'arrivée fibre et le raccordement opérateur & \todo & \\
+25 & Vérifier le raccordement du bloc public /28 & SRX300 (confirmé) & \\
+26 & Identifier les liens entre switches (topologie) & \todo & \\
+27 & Vérifier la présence de câbles 10 GbE (SFP+) & \todo & \\
+\end{longtable}
+
+\subsection{Inventaire physique — environnement}
+\begin{longtable}{@{}p{0.5cm}p{5cm}p{4.5cm}p{3.5cm}@{}}
+\toprule
+\textbf{\#} & \textbf{Action} & \textbf{Relevé} & \textbf{Commentaire} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{\#} & \textbf{Action (suite)} & \textbf{Relevé} & \textbf{Commentaire} \\
+\midrule
+\endhead
+\midrule
+\multicolumn{4}{r}{\footnotesize\itshape Suite page suivante \ldots} \\
+\endfoot
+\bottomrule
+\endlastfoot
+28 & Vérifier la présence et l'état d'un onduleur & Aucun connu & \\
+29 & Vérifier la capacité de l'onduleur (kVA, autonomie) & \todo & \\
+30 & Vérifier le nombre de circuits électriques disponibles & \todo & \\
+31 & Vérifier la redondance des alimentations serveurs & \todo & \\
+32 & Vérifier la climatisation (type, capacité, redondance) & Présente & \\
+33 & Relever la température et l'hygrométrie de la salle & \todo & \\
+34 & Identifier les accès physiques (serrures, badges) & \todo & \\
+\end{longtable}
+
+\subsection{Documentation à récupérer}
+\begin{itemize}
+  \item Schémas réseau de l'ancienne infrastructure.
+  \item Inventaire matériel historique.
+  \item Documentation OpenStack (version, configuration, projets).
+  \item Configuration Ceph (si utilisée).
+  \item Fichiers Ansible / scripts de déploiement.
+  \item Documentation Proxmox (si utilisée).
+  \item Plans de câblage.
+  \item Contrats de support et licences en cours.
+  \item Contacts des anciens prestataires.
+\end{itemize}
+
+\section{Résultats de l'audit}
+\begin{todobox}[À compléter après la visite]
+Cette section accueillera le tableau d'inventaire consolidé, les photographies, et la liste des éléments réutilisables, à remplacer et à acquérir.
+\end{todobox}
