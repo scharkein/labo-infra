@@ -4,18 +4,23 @@
 \section{Vue d'ensemble}
 L'architecture cible se décompose en cinq couches, de la plus basse (infrastructure physique) à la plus haute (services utilisateurs).
 
-\begin{figure}[htbp]
-\centering
+\begin{figure}[H]
+\centering\vspace{2pt}
 \input{figures/fig-archi-physique}
 \caption{Architecture en couches — vue logique.}
 \label{fig:archi-layers}
 \end{figure}
 
 \section{Couche 1 — Infrastructure physique}
-\begin{tabularx}{\textwidth}{@{}lXl@{}}
+\begin{xltabular}{\textwidth}{@{}lXl@{}}
 \toprule
-\textbf{Composant} & \textbf{Rôle} & \textbf{État} \\
+\hd{Composant} & \hd{Rôle} & \hd{État} \\
 \midrule
+\endhead
+\bottomrule
+\endfoot
+\bottomrule
+\endlastfoot
 Serveurs R630 (×4) & Plateforme transitoire & Disponibles, RAM/disques à acheter \\
 Serveurs historiques & Cible OpenStack & À inventorier \\
 Baies de stockage & Stockage partagé & À inventorier \\
@@ -25,8 +30,8 @@ Fibre opérateur & Accès Internet & Présente \\
 Bloc public /28 & Publication de services & Routé vers SRX300 \\
 Onduleur & Continuité électrique & Non confirmé \\
 Climatisation & Refroidissement & Présente \\
-\bottomrule
-\end{tabularx}
+
+\end{xltabular}
 
 \section{Couche 2 — Réseau et sécurité}
 Le réseau est segmenté en zones logiques (VLAN), avec un filtrage strict entre zones. Le SRX300 assure le routage inter-VLAN critique, le NAT sortant et le VPN d'accès. Les switches Cisco assurent le switching L2 et, si nécessaire, le routage L3 local.
@@ -64,15 +69,20 @@ Trois options sont à l'étude, à trancher après l'audit.
 
 {\small
 \renewcommand{\arraystretch}{1.2}
-\begin{tabularx}{\textwidth}{@{}lXXl@{}}
+\begin{xltabular}{\textwidth}{@{}lXXl@{}}
 \toprule
-\textbf{Option} & \textbf{Avantages} & \textbf{Inconvénients} & \textbf{Conditions} \\
+\hd{Option} & \hd{Avantages} & \hd{Inconvénients} & \hd{Conditions} \\
 \midrule
+\endhead
+\bottomrule
+\endfoot
+\bottomrule
+\endlastfoot
 Stockage local (ZFS, LVM) & Simple, rapide, pas de réseau dédié & Pas de tolérance à la panne d'un nœud & Acceptable en transitoire \\
 NFS / iSCSI sur baie & Centralisé, sauvegardable, mature & SPOF si une seule baie, réseau dédié requis & Si baie historique fonctionnelle \\
 Ceph & Distribué, tolérant aux pannes, intégré OpenStack & Complexe, réseau 10 GbE quasi obligatoire & Si 10 GbE disponible et $\geq 3$ nœuds dédiés \\
-\bottomrule
-\end{tabularx}
+
+\end{xltabular}
 }
 
 \begin{warnbox}[Position actuelle]
@@ -91,24 +101,34 @@ Les services fournis aux utilisateurs finaux se répartissent en trois catégori
 \section{Flux logiques}
 Les flux suivants sont identifiés et doivent être filtrés par le SRX300 et/ou les security groups Neutron.
 
-\begin{tabularx}{\textwidth}{@{}llX@{}}
+\begin{xltabular}{\textwidth}{@{}llX@{}}
 \toprule
-\textbf{Source} & \textbf{Destination} & \textbf{Autorisation} \\
+\hd{Source} & \hd{Destination} & \hd{Autorisation} \\
 \midrule
+\endhead
+\bottomrule
+\endfoot
+\bottomrule
+\endlastfoot
 Internet & DMZ (reverse proxy, VPN) & Ports 80/443, 1194/udp \\
 VPN étudiants & Réseau cloud (Horizon, API) & Ports 443 uniquement \\
 Étudiants & Projets OpenStack & Isolation par projet, sortie Internet contrôlée \\
 Cyberlabs & Internet & Aucune (isolé) \\
 Management & Tous les composants & Réseau dédié, VPN admin \\
 Compute & Stockage & Réseau dédié, MTU 9000 si possible \\
-\bottomrule
-\end{tabularx}
+
+\end{xltabular}
 
 \section{Choix technologiques — synthèse}
-\begin{tabularx}{\textwidth}{@{}lXl@{}}
+\begin{xltabular}{\textwidth}{@{}lXl@{}}
 \toprule
-\textbf{Domaine} & \textbf{Choix} & \textbf{Statut} \\
+\hd{Domaine} & \hd{Choix} & \hd{Statut} \\
 \midrule
+\endhead
+\bottomrule
+\endfoot
+\bottomrule
+\endlastfoot
 Hyperviseur transitoire & Proxmox VE & Décidé \\
 Hyperviseur cible & OpenStack (version à figer) & Décidé \\
 Firewall périmètre & Juniper SRX300 & Décidé (à confirmer modèle) \\
@@ -119,5 +139,5 @@ Orchestration quotas & Outil custom (voir chap.~\ref{chap:orchestration}) & Déc
 Backup & PBS (Proxmox), Restic/Borg (OpenStack) & À figer \\
 Supervision & Prometheus + Grafana + Loki & À figer \\
 Ticketing & À choisir & À figer \\
-\bottomrule
-\end{tabularx}
+
+\end{xltabular}

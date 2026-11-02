@@ -13,17 +13,22 @@
 
 \section{Identité et accès}
 \subsection{Comptes}
-\begin{tabularx}{\textwidth}{@{}lX@{}}
+\begin{xltabular}{\textwidth}{@{}lX@{}}
 \toprule
-\textbf{Type de compte} & \textbf{Usage} \\
+\hd{Type de compte} & \hd{Usage} \\
 \midrule
+\endhead
+\bottomrule
+\endfoot
+\bottomrule
+\endlastfoot
 Utilisateur étudiant & Projet individuel, membres de groupes \\
 Utilisateur enseignant & Projet individuel + droit de lecture sur les groupes \\
 Administrateur système & Accès management, création de projets, modification de quotas \\
 Compte de service & Utilisé par l'orchestration pour piloter OpenStack \\
 Compte d'urgence & Accès hors bande (iDRAC, console) en cas de perte d'accès \\
-\bottomrule
-\end{tabularx}
+
+\end{xltabular}
 
 \subsection{Authentification}
 \begin{itemize}

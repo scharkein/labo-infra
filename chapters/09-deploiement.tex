@@ -2,18 +2,23 @@
 \label{chap:deploiement}
 
 \section{Trajectoire}
-\begin{tabularx}{\textwidth}{@{}llXl@{}}
+\begin{xltabular}{\textwidth}{@{}llXl@{}}
 \toprule
-\textbf{Phase} & \textbf{Durée} & \textbf{Objectif} & \textbf{Jalon} \\
+\hd{Phase} & \hd{Durée} & \hd{Objectif} & \hd{Jalon} \\
 \midrule
+\endhead
+\bottomrule
+\endfoot
+\bottomrule
+\endlastfoot
 0 — Audit & 2 sem. & Inventaire complet & Rapport d'audit \\
 1 — Socle Proxmox & 1–2 mois & Cluster opérationnel & Plateforme stable \\
 2 — Labo OpenStack & 3–4 mois & OpenStack fonctionnel & Tests quotas validés \\
 3 — Pilote & 3–6 mois & Premiers groupes réels & Retour d'usage \\
 4 — Reconstruction & 6–12 mois & Salle historique opérationnelle & OpenStack bare metal \\
 5 — Production & Continu & Ouverture à tous & Recette utilisateur \\
-\bottomrule
-\end{tabularx}
+
+\end{xltabular}
 
 \section{Phase 0 — Audit}
 Voir chapitre~\ref{chap:audit}. Critères de sortie : inventaire complet, identification des réutilisables, décision Go/No-Go pour la phase 1.

@@ -12,10 +12,15 @@
 \end{itemize}
 
 \section{Plan de VLAN}
-\begin{tabularx}{\textwidth}{@{}rrrrX@{}}
+\begin{xltabular}{\textwidth}{@{}rrrrX@{}}
 \toprule
-\textbf{VLAN} & \textbf{Nom} & \textbf{Sous-réseau} & \textbf{Passerelle} & \textbf{Usage} \\
+\hd{VLAN} & \hd{Nom} & \hd{Sous-réseau} & \hd{Passerelle} & \hd{Usage} \\
 \midrule
+\endhead
+\bottomrule
+\endfoot
+\bottomrule
+\endlastfoot
 10  & MGMT       & 10.10.0.0/24  & 10.10.0.1  & iDRAC, mgmt switches, mgmt SRX, mgmt hyperviseurs \\
 20  & SRV-CLOUD  & 10.20.0.0/24  & 10.20.0.1  & Trafic des VM (Proxmox, puis OpenStack) \\
 30  & STORAGE    & 10.30.0.0/24  & (pas de GW) & Ceph public/cluster, NFS, iSCSI (isolé) \\
@@ -26,18 +31,23 @@
 80  & CYBERLAB   & 10.80.0.0/23  & 10.80.0.1  & Cyberlabs isolés (VLAN + security groups) \\
 90  & VXLAN-OVL  & 10.90.0.0/24  & 10.90.0.1  & Endpoints VXLAN Neutron \\
 100 & RESERVE-1  & 10.100.0.0/24 & —          & Réservé (futur tenant dédié) \\
-\bottomrule
-\end{tabularx}
+
+\end{xltabular}
 
 \begin{infobox}[Traitement des tenants OpenStack]
 Les réseaux « tenant » d'OpenStack ne sont pas mappés sur des VLAN dédiés. Neutron utilise une encapsulation VXLAN, dont les endpoints résident sur le VLAN 90. Cela évite la limite de 4094 VLAN et permet un nombre arbitraire de réseaux par projet.
 \end{infobox}
 
 \section{Plan d'adressage — conventions}
-\begin{tabularx}{\textwidth}{@{}lX@{}}
+\begin{xltabular}{\textwidth}{@{}lX@{}}
 \toprule
-\textbf{Plage} & \textbf{Usage} \\
+\hd{Plage} & \hd{Usage} \\
 \midrule
+\endhead
+\bottomrule
+\endfoot
+\bottomrule
+\endlastfoot
 .x.1              & Passerelle SRX300 \\
 .x.2 à .x.9       & Équipements réseau (switches, bornes) \\
 .x.10 à .x.19     & Hyperviseurs et serveurs critiques \\
@@ -47,16 +57,21 @@ Les réseaux « tenant » d'OpenStack ne sont pas mappés sur des VLAN dédiés.
 .x.150 à .x.199   & Réservé \\
 .x.200 à .x.249   & Réservé administration / outillage \\
 .x.250 à .x.254   & Réservé adresses de service HA \\
-\bottomrule
-\end{tabularx}
+
+\end{xltabular}
 
 \section{Bloc public /28}
 Le bloc \texttt{178.16.175.144/28} est routé vers le SRX300.
 
-\begin{tabularx}{\textwidth}{@{}lX@{}}
+\begin{xltabular}{\textwidth}{@{}lX@{}}
 \toprule
-\textbf{Adresse} & \textbf{Usage} \\
+\hd{Adresse} & \hd{Usage} \\
 \midrule
+\endhead
+\bottomrule
+\endfoot
+\bottomrule
+\endlastfoot
 .144    & Adresse réseau (non utilisable) \\
 .145    & Passerelle opérateur \\
 .146    & Réservé services critiques \\
@@ -70,26 +85,31 @@ Le bloc \texttt{178.16.175.144/28} est routé vers le SRX300.
 .157    & Management SRX (accès via VPN uniquement) \\
 .158    & VM de services exposés (Minecraft etc.) \\
 .159    & Adresse de broadcast (non utilisable) \\
-\bottomrule
-\end{tabularx}
+
+\end{xltabular}
 
 \begin{warnbox}[Ne pas exposer le management directement sur Internet]
 L'adresse \texttt{.157} n'est pas un port d'administration public. Elle est utilisée uniquement comme point d'accès VPN pour les administrateurs. L'administration du SRX et des équipements reste sur le VLAN 10 (management).
 \end{warnbox}
 
 \section{Topologie physique}
-\begin{figure}[htbp]
-\centering
+\begin{figure}[H]
+\centering\vspace{2pt}
 \input{figures/fig-reseau-l2l3}
 \caption{Topologie réseau L2/L3 — vue logique.}
 \label{fig:reseau-l2l3}
 \end{figure}
 
 \section{Règles de filtrage SRX — vue synthétique}
-\begin{tabularx}{\textwidth}{@{}lXXXX@{}}
+\begin{xltabular}{\textwidth}{@{}lXXXX@{}}
 \toprule
-\textbf{Source} & \textbf{Dest.} & \textbf{Ports} & \textbf{Action} & \textbf{Commentaire} \\
+\hd{Source} & \hd{Dest.} & \hd{Ports} & \hd{Action} & \hd{Commentaire} \\
 \midrule
+\endhead
+\bottomrule
+\endfoot
+\bottomrule
+\endlastfoot
 Internet     & DMZ          & 80, 443           & allow & Reverse proxy \\
 Internet     & DMZ          & 1194/udp, 51820/udp & allow & VPN \\
 Internet     & Tout interne & —                 & deny  & \\
@@ -103,8 +123,8 @@ SRV-CLOUD    & Internet     & —                 & allow & Sortie NAT \\
 SRV-CLOUD    & MGMT         & —                 & deny  & Isolation \\
 CYBERLAB     & Tous         & —                 & deny  & Isolé par défaut \\
 CYBERLAB     & Internet     & —                 & deny  & Sauf scénario explicite \\
-\bottomrule
-\end{tabularx}
+
+\end{xltabular}
 
 \begin{infobox}[Approche « deny by default »]
 Toutes les zones ont une politique par défaut de rejet. Seuls les flux listés ci-dessus sont explicitement autorisés. Ce choix simplifie l'audit et réduit la surface d'attaque.

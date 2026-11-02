@@ -44,16 +44,21 @@ Kolla-Ansible est retenu pour le labo et pour la production. Il est mature, cont
 
 \section{Phase cible — OpenStack bare metal}
 \subsection{Rôles}
-\begin{tabularx}{\textwidth}{@{}lX@{}}
+\begin{xltabular}{\textwidth}{@{}lX@{}}
 \toprule
-\textbf{Rôle} & \textbf{Description} \\
+\hd{Rôle} & \hd{Description} \\
 \midrule
+\endhead
+\bottomrule
+\endfoot
+\bottomrule
+\endlastfoot
 Controller & Keystone, Nova API, Neutron server, Glance API, Cinder API, Horizon ($\times 3$ pour HA) \\
 Compute    & Nova compute, Neutron agent, Ceph OSD (si convergé) \\
 Storage    & Ceph OSD ou nœuds Cinder dédiés selon l'option retenue \\
 Network    & Neutron L3 agent si DVR non retenu \\
-\bottomrule
-\end{tabularx}
+
+\end{xltabular}
 
 \begin{todobox}[À finaliser après audit serveurs historiques]
 La répartition dépendra du nombre de serveurs historiques, de leur RAM, de leurs CPU et de leurs disques. La cible peut être totalement ou partiellement convergée.

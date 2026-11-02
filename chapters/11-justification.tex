@@ -23,14 +23,19 @@ Ce chapitre est destiné à la direction. Il présente les scénarios d'investis
 \end{itemize}
 
 \section{Risques et mitigation}
-\begin{tabularx}{\textwidth}{@{}lXX@{}}
+\begin{xltabular}{\textwidth}{@{}lXX@{}}
 \toprule
-\textbf{Risque} & \textbf{Impact} & \textbf{Mitigation} \\
+\hd{Risque} & \hd{Impact} & \hd{Mitigation} \\
 \midrule
+\endhead
+\bottomrule
+\endfoot
+\bottomrule
+\endlastfoot
 Matériel historique non réutilisable & Reconstruction complète = coût élevé & Audit préalable, scénarios alternatifs \\
 Perte de compétence (départ admin) & Infrastructure non maintenue & Documentation, formation, externalisation minimale \\
 Dépassement budgétaire & Retard de phases & Découpage en lots, jalons de validation \\
 Attaque cyberlab & Compromission de l'infra & Isolation stricte, supervision \\
 SRX300 sous-dimensionné & VPN étudiant impossible & Concentrateur VPN dédié, portail web \\
-\bottomrule
-\end{tabularx}
+
+\end{xltabular}

@@ -16,18 +16,23 @@ Aucune décision d'architecture de la cible ne doit dépendre de la configuratio
 \section{Principe directeur \#2 — Trajectoire progressive avec jalons}
 Chaque phase a un objectif clair, un critère de validation et un livrable. On ne passe pas à la phase suivante sans avoir validé les critères de la précédente.
 
-\begin{tabularx}{\textwidth}{@{}llXl@{}}
+\begin{xltabular}{\textwidth}{@{}llXl@{}}
 \toprule
-\textbf{Phase} & \textbf{Durée} & \textbf{Objectif} & \textbf{Jalon} \\
+\hd{Phase} & \hd{Durée} & \hd{Objectif} & \hd{Jalon} \\
 \midrule
+\endhead
+\bottomrule
+\endfoot
+\bottomrule
+\endlastfoot
 0 — Audit & 2 sem. & Inventaire complet de l'existant & Rapport d'audit \\
 1 — Transitoire & 1–2 mois & Proxmox opérationnel sur R630 & Plateforme stable \\
 2 — Labo OpenStack & 3–4 mois & OpenStack fonctionnel en VM & Premiers tests de quotas \\
 3 — Pilote & 3–6 mois & Ouverture à 1–2 groupes réels & Retour d'usage \\
 4 — Reconstruction & 6–12 mois & Salle serveur historique remise en service & OpenStack bare metal \\
 5 — Production & Continu & Ouverture à tous les élèves & Recette utilisateur \\
-\bottomrule
-\end{tabularx}
+
+\end{xltabular}
 
 \section{Principe directeur \#3 — Sécurité par défaut}
 L'infrastructure est segmentée dès la conception. Aucun flux n'est autorisé implicitement entre zones. Le management est inaccessible depuis les réseaux étudiants. Les cyberlabs sont isolés physiquement (VLAN) et logiquement (Neutron security groups + firewall).

@@ -6,29 +6,39 @@ Les options de stockage cible dépendent de l'audit (baies historiques, disques 
 \end{todobox}
 
 \section{Besoins}
-\begin{tabularx}{\textwidth}{@{}lXl@{}}
+\begin{xltabular}{\textwidth}{@{}lXl@{}}
 \toprule
-\textbf{Besoin} & \textbf{Description} & \textbf{Criticité} \\
+\hd{Besoin} & \hd{Description} & \hd{Criticité} \\
 \midrule
+\endhead
+\bottomrule
+\endfoot
+\bottomrule
+\endlastfoot
 Disques système VM & Images racine, volume de boot & Élevée \\
 Volumes persistants & Données utilisateurs, bases & Élevée \\
 Images système & Templates OS, snapshots de base & Moyenne \\
 Snapshots & Sauvegardes rapides, rollback & Moyenne \\
 Sauvegardes & Rétention long terme, PRA & Élevée (off-site) \\
-\bottomrule
-\end{tabularx}
+
+\end{xltabular}
 
 \section{Options pour la phase transitoire}
-\begin{tabularx}{\textwidth}{@{}lXX@{}}
+\begin{xltabular}{\textwidth}{@{}lXX@{}}
 \toprule
-\textbf{Option} & \textbf{Avantages} & \textbf{Inconvénients} \\
+\hd{Option} & \hd{Avantages} & \hd{Inconvénients} \\
 \midrule
+\endhead
+\bottomrule
+\endfoot
+\bottomrule
+\endlastfoot
 ZFS local par nœud & Simple, snapshots natifs, compression & Pas de HA, réplication manuelle \\
 ZFS + réplication async & HA légère (RPO > 0) & Complexité modérée, pas de HA temps réel \\
 NFS sur VM dédiée & Centralisé, simple & SPOF \\
 Proxmox Backup Server & Sauvegardes complètes, déduplication & Ajoute un serveur \\
-\bottomrule
-\end{tabularx}
+
+\end{xltabular}
 
 \section{Décision pour la phase transitoire}
 \begin{okbox}[Choix retenu]

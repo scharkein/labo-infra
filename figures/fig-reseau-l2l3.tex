@@ -1,31 +1,19 @@
-\resizebox{\textwidth}{!}{%
-\begin{tikzpicture}[
-  node distance=1.2cm and 2cm,
-  box/.style={rectangle, rounded corners, draw, thick, minimum width=3cm,
-    minimum height=1.2cm, align=center, font=\small, fill=lightgray},
-  fw/.style={box, fill=warning!20},
-  sw/.style={box, fill=secondary!20},
-  srv/.style={box, fill=success!15},
-  pub/.style={box, fill=accent!20},
-  >=Stealth
-]
-  \node[pub] (inet) {Internet};
-  \node[pub, below=of inet] (isp) {Opérateur\\fibre};
+% Topologie L2/L3 — vue logique
+\begin{tikzpicture}[node distance=0.85cm]
+  \node[term, minimum width=3.6cm] (inet) {Internet};
+  \node[blk, below=of inet, minimum width=3.6cm] (isp) {Opérateur fibre};
+  \node[key, below=of isp, minimum width=5.2cm, minimum height=1.3cm] (srx)
+    {\textbf{Juniper SRX300}\\[1pt]\scriptsize NAT · VPN · filtrage};
+  \node[blk, below left=1.1cm and 0.6cm of srx, minimum width=3.8cm] (sw1) {Switch Cisco 1};
+  \node[blk, below right=1.1cm and 0.6cm of srx, minimum width=3.8cm] (sw2) {Switch Cisco 2};
+  \node[blk, below=1.5cm of sw1, minimum width=4.4cm] (r630) {R630 $\times$ 4\\[1pt]\scriptsize Proxmox (transitoire)};
+  \node[blk, below=1.5cm of sw2, minimum width=4.4cm] (hist) {Serveurs historiques\\[1pt]\scriptsize cible OpenStack};
 
-  \node[fw, below=of isp, minimum width=4cm] (srx) {Juniper SRX300\\NAT / VPN / Filtrage};
-
-  \node[sw, below left=of srx, xshift=-1cm] (sw1) {Switch Cisco 1};
-  \node[sw, below right=of srx, xshift=1cm] (sw2) {Switch Cisco 2};
-
-  \node[srv, below=of sw1] (r630) {R630 $\times 4$\\Proxmox (transitoire)};
-  \node[srv, below=of sw2] (hist) {Serveurs\\historiques};
-
-  \draw[->, thick] (inet) -- (isp);
-  \draw[->, thick] (isp) -- node[right]{fibre} (srx);
-  \draw[<->, thick] (srx) -- (sw1);
-  \draw[<->, thick] (srx) -- (sw2);
-  \draw[<->, thick] (sw1) -- node[left, align=center]{VLAN\\10/20/40} (r630);
-  \draw[<->, thick] (sw2) -- node[right, align=center]{VLAN\\10/20/30} (hist);
-  \draw[<->, thick, dashed] (sw1) -- node[above]{trunk LACP} (sw2);
-\end{tikzpicture}%
-}
+  \draw[flow] (inet) -- (isp);
+  \draw[flow] (isp) -- node[lab, right=2pt] {fibre} (srx);
+  \draw[flow] (srx.south) -- ++(0,-0.45) -| (sw1.north);
+  \draw[flow] (srx.south) -- ++(0,-0.45) -| (sw2.north);
+  \draw[dflow] (sw1) -- node[lab, above=1pt] {trunk LACP} (sw2);
+  \draw[flow] (sw1) -- node[lab, left=3pt] {VLAN 10 · 20 · 40} (r630);
+  \draw[flow] (sw2) -- node[lab, right=3pt] {VLAN 10 · 20 · 30} (hist);
+\end{tikzpicture}

@@ -1,10 +1,10 @@
 % ============================================================
 % main.tex — Compile tout le dossier
-% pdfLaTeX, TeX Live full
+% XeLaTeX, TeX Live complet  (make  ou  latexmk -xelatex main.tex)
 %
 % Compiler un chapitre seul : décommenter \includeonly ci-dessous
 % ============================================================
-\documentclass[a4paper,11pt,oneside]{report}
+\documentclass[a4paper,10pt,oneside]{report}
 
 % \includeonly{chapters/03-lld-reseau}
 
@@ -18,9 +18,10 @@
 \pagenumbering{roman}
 \input{frontmatter/revision}
 
+\begingroup\hypersetup{linkcolor=ink}
 \tableofcontents
 \listoffigures
-\listoftables
+\endgroup
 
 \input{frontmatter/abstract}
 \clearpage

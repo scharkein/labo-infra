@@ -17,17 +17,22 @@ Le dimensionnement suit une logique N+1 : la perte d'un nœud ne doit pas entra�
 \end{itemize}
 
 \section{Hypothèses de profils VM}
-\begin{tabularx}{\textwidth}{@{}lrrrX@{}}
+\begin{xltabular}{\textwidth}{@{}lrrrX@{}}
 \toprule
-\textbf{Profil} & \textbf{vCPU} & \textbf{RAM} & \textbf{Disque} & \textbf{Exemple} \\
+\hd{Profil} & \hd{vCPU} & \hd{RAM} & \hd{Disque} & \hd{Exemple} \\
 \midrule
+\endhead
+\bottomrule
+\endfoot
+\bottomrule
+\endlastfoot
 Petite Linux      & 1 & 2 Go  & 20 Go  & TP, dev \\
 Standard Linux    & 2 & 4 Go  & 40 Go  & App web, DB légère \\
 Développement     & 4 & 8 Go  & 60 Go  & IDE, build \\
 Base de données   & 4 & 16 Go & 100 Go & PostgreSQL, MariaDB \\
 Kubernetes / CI   & 4–8 & 16 Go & 100 Go & Cluster de test \\
-\bottomrule
-\end{tabularx}
+
+\end{xltabular}
 
 \section{Scénarios à chiffrer}
 \begin{todobox}[À produire]

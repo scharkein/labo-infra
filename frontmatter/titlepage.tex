@@ -1,33 +1,33 @@
 \begin{titlepage}
-\centering
-\begin{tikzpicture}[remember picture, overlay]
-  \fill[primary] (current page.north west) rectangle ([yshift=-5cm]current page.north east);
-  \fill[accent]  ([yshift=-5cm]current page.north west) rectangle ([yshift=-5.25cm]current page.north east);
+\thispagestyle{empty}
+\setlength{\parskip}{0pt}
+\noindent{\color{accent}\rule{\textwidth}{1.6pt}}\par\vspace{7pt}
+\noindent{\color{muted}\scriptsize\caps{Dossier d'architecture}\hfill\caps{\docref}}
 
-  \node[anchor=north west, text=white, font=\fontsize{34}{40}\selectfont\bfseries]
-    at ([xshift=2.2cm, yshift=-1.8cm]current page.north west) {Dossier d'architecture};
-  \node[anchor=north west, text=white!85!primary, font=\Large]
-    at ([xshift=2.2cm, yshift=-3.2cm]current page.north west) {Cloud privé OpenStack — Infrastructure de l'école};
+\vspace{5.2cm}
 
-  \node[anchor=north west, text=primary, font=\LARGE\bfseries]
-    at ([xshift=2.2cm, yshift=-6.5cm]current page.north west) {HLD, LLD et Roadmap};
-  \node[anchor=north west, text=darkgray, font=\large]
-    at ([xshift=2.2cm, yshift=-8cm]current page.north west)
-    {De la plateforme transitoire Proxmox au cloud privé OpenStack};
+{\color{accent}\small\caps{HLD · LLD · Roadmap}}\par\vspace{12pt}
+{\fontsize{40}{44}\selectfont Cloud privé\\OpenStack\par}
+\vspace{10pt}
+{\fontsize{17}{22}\selectfont\itshape\color{muted} Infrastructure de l'école\par}
+\vspace{16pt}
+{\color{accent}\rule{2.4cm}{1.2pt}}\par\vspace{14pt}
+\begin{minipage}{0.78\textwidth}
+\large De la plateforme transitoire Proxmox\\au cloud privé OpenStack
+\end{minipage}
 
-  \node[anchor=south west, text=darkgray]
-    at ([xshift=2.2cm, yshift=2.5cm]current page.south west) {%
-    \renewcommand{\arraystretch}{1.4}
-    \begin{tabular}{@{}ll@{}}
-      \textbf{\color{primary}Référence}      & DOC-ARCH-000 \\
-      \textbf{\color{primary}Version}        & 0.1 — Brouillon \\
-      \textbf{\color{primary}Statut}         & En revue technique \\
-      \textbf{\color{primary}Date}           & \today \\
-      \textbf{\color{primary}Classification} & Interne \\
-      \textbf{\color{primary}Auteur}         & Équipe Infrastructure \\
-    \end{tabular}};
-  \node[anchor=south east, text=primary, font=\bfseries]
-    at ([xshift=-2.2cm, yshift=2.5cm]current page.south east)
-    {\large OpenStack — Proxmox — Juniper — Cisco};
-\end{tikzpicture}
+\vfill
+
+\noindent\renewcommand{\arraystretch}{1.55}\begin{tabular}{@{}l@{\hspace{1.2cm}}l@{}}
+\arrayrulecolor{hair}\specialrule{0.4pt}{0pt}{0pt}
+{\scriptsize\color{muted}\caps{Référence}}      & \docref \\ \specialrule{0.3pt}{0pt}{0pt}
+{\scriptsize\color{muted}\caps{Version}}        & \docver\ — \docstatus \\ \specialrule{0.3pt}{0pt}{0pt}
+{\scriptsize\color{muted}\caps{Statut}}         & En revue technique \\ \specialrule{0.3pt}{0pt}{0pt}
+{\scriptsize\color{muted}\caps{Date}}           & \docdate \\ \specialrule{0.3pt}{0pt}{0pt}
+{\scriptsize\color{muted}\caps{Classification}} & Interne \\ \specialrule{0.3pt}{0pt}{0pt}
+{\scriptsize\color{muted}\caps{Auteur}}         & Équipe Infrastructure \\ \specialrule{0.4pt}{0pt}{0pt}
+\end{tabular}
+
+\vspace{1.1cm}
+\noindent{\color{muted}\scriptsize\caps{OpenStack · Proxmox · Juniper · Cisco}}
 \end{titlepage}

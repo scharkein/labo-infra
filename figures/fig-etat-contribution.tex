@@ -1,19 +1,13 @@
+% Machine à états d'une contribution
 \begin{tikzpicture}[
-  >=Stealth, node distance=4.2cm and 6.5cm,
-  state/.style={rectangle, rounded corners, draw, thick,
-    minimum width=3.6cm, minimum height=1.4cm, align=center, font=\small},
-  every edge/.style={draw, ->, thick},
-  every edge quotes/.style={auto, font=\footnotesize, align=center}
+  st/.style={base, rectangle, minimum width=3.6cm, minimum height=1.3cm, font=\ttfamily\footnotesize\bfseries},
 ]
-  \node[state, fill=success!15]  (committed) {\textbf{COMMITTED}\\\footnotesize membre actif};
-  \node[state, right=of committed, fill=accent!20] (pending)
-    {\textbf{RELEASE\_PENDING}\\\footnotesize quota gelé};
-  \node[state, below=of committed, fill=secondary!15] (released)
-    {\textbf{RELEASED}\\\footnotesize quota restitué};
+  \node[st, fill=accent!8, line width=1.1pt] (c) at (0,0)    {COMMITTED\\[1pt]\sffamily\mdseries\scriptsize membre actif};
+  \node[st]                 (p) at (8.4,0)  {RELEASE\_PENDING\\[1pt]\sffamily\mdseries\scriptsize quota gelé};
+  \node[st]                 (r) at (4.2,-3.8) {RELEASED\\[1pt]\sffamily\mdseries\scriptsize quota restitué};
 
-  \path[->]
-    (committed) edge[bend left=15] node[above, align=center]{départ\\$U > L'$} (pending)
-    (pending)   edge[bend left=15] node[below, align=center]{réintégration} (committed)
-    (committed) edge node[left, align=center]{départ\\$U \leq L'$} (released)
-    (pending)   edge node[right, align=center]{$U \leq L'$\\ou groupe supprimé} (released);
+  \draw[flow,->] ([yshift=7pt]c.east) -- node[lab, above=1pt] {départ, $U > L'$} ([yshift=7pt]p.west);
+  \draw[flow,->] ([yshift=-7pt]p.west) -- node[lab, below=1pt] {réintégration} ([yshift=-7pt]c.east);
+  \draw[flow,->] (c.south) |- node[lab, above=1pt, pos=0.75] {départ, $U \leq L'$} (r.west);
+  \draw[flow,->] (p.south) |- node[lab, above=1pt, pos=0.75, align=center] {$U \leq L'$ ou\\groupe supprimé} (r.east);
 \end{tikzpicture}

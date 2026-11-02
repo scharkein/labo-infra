@@ -1,15 +1,22 @@
+% Architecture en couches — bandes contiguës, teinte croissante vers le bas
 \begin{tikzpicture}[
-  layer/.style={rectangle, rounded corners, draw, thick, minimum width=12cm,
-    minimum height=1.6cm, align=center, font=\small},
-  >=Stealth
+  band/.style={base, rectangle, minimum width=\textwidth, minimum height=1.25cm,
+    inner xsep=0pt, align=left, text width=\textwidth-3.6cm, anchor=west}
 ]
-  \node[layer, fill=accent!15]  (l1) at (0, 0)  {\textbf{Couche 5 — Services utilisateurs} : IaaS, cyberlabs, services communs};
-  \node[layer, fill=secondary!15] (l2) at (0, -2) {\textbf{Couche 4 — Orchestration} : OpenStack / Proxmox, quotas, gouvernance};
-  \node[layer, fill=primary!10] (l3) at (0, -4) {\textbf{Couche 3 — Hyperviseurs} : Proxmox (transitoire), OpenStack (cible)};
-  \node[layer, fill=warning!10] (l4) at (0, -6) {\textbf{Couche 2 — Réseau} : SRX300, switches Cisco, VLAN, VPN};
-  \node[layer, fill=success!10] (l5) at (0, -8) {\textbf{Couche 1 — Physique} : serveurs, stockage, alimentation, climatisation};
-
-  \foreach \i/\j in {1/2, 2/3, 3/4, 4/5} {
-    \draw[->, thick] (l\i.south) -- (l\j.north);
+  \def\w{\textwidth}
+  \foreach \n/\t/\d/\f in {
+    5/{Services utilisateurs}/{IaaS, cyberlabs, services communs}/4,
+    4/{Orchestration}/{OpenStack / Proxmox, quotas, gouvernance}/8,
+    3/{Hyperviseurs}/{Proxmox (transitoire), OpenStack (cible)}/12,
+    2/{Réseau}/{SRX300, switches Cisco, VLAN, VPN}/16,
+    1/{Physique}/{serveurs, stockage, alimentation, climatisation}/20}
+  {
+    \pgfmathsetmacro{\y}{-(5-\n)*1.25}
+    \node[base, rectangle, fill=accent!\f, minimum width=\textwidth, minimum height=1.25cm,
+      anchor=north west, inner sep=0pt] (b\n) at (0,\y) {};
+    \node[font=\sffamily\scriptsize\bfseries, text=accent, anchor=west] at ([xshift=10pt]b\n.west)
+      {\MakeUppercase{Couche \n}};
+    \node[font=\sffamily\footnotesize, anchor=west, text=ink] at ([xshift=2.5cm]b\n.west)
+      {\textbf{\t}\ \ \textcolor{muted}{—}\ \ \d};
   }
 \end{tikzpicture}

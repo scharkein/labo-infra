@@ -1,33 +1,41 @@
 \chapter{Références}
-\section*{Documentation constructeur}
+\begingroup\small\setlist[itemize]{itemsep=3pt,topsep=1pt,label={\color{accent}\textendash}}\setlength{\parskip}{0pt}
+
+% \ref{url}{texte} : lien cliquable + adresse imprimée (utile sur papier)
+\newcommand{\refdoc}[3]{\item #1 — #2.\\{\sffamily\footnotesize\color{muted}\url{#3}}}
+
+\vspace{-4pt}\section*{Documentation constructeur}
 \begin{itemize}
-  \item Dell PowerEdge R630 Technical Guide — Dell Inc.
-  \item Juniper SRX300 Services Gateway — Juniper Networks.
+  \refdoc{Dell PowerEdge R630, documentation et guide technique}{Dell Technologies}{https://www.dell.com/support/home/en-us/product-support/product/poweredge-r630/docs}
+  \refdoc{Juniper SRX300 Services Gateway}{Juniper Networks}{https://www.juniper.net/documentation/product/us/en/srx300/}
   \item Documentation Cisco (modèle à préciser après audit).
 \end{itemize}
 
-\section*{Documentation OpenStack}
+\vspace{-4pt}\section*{Documentation OpenStack}
 \begin{itemize}
-  \item OpenStack Installation Guide (Kolla-Ansible).
-  \item OpenStack Administrator Guide.
-  \item OpenStack Architecture Design Guide.
-  \item OpenStack Operations Guide.
+  \refdoc{Installation Guides}{OpenStack}{https://docs.openstack.org/install/}
+  \refdoc{Kolla-Ansible, guide de déploiement}{OpenStack}{https://docs.openstack.org/kolla-ansible/latest/}
+  \refdoc{Administrator Guides}{OpenStack}{https://docs.openstack.org/2023.2/admin/}
+  \refdoc{Architecture Design Guide}{OpenStack}{https://docs.openstack.org/arch-design/}
+  \refdoc{Operations Guide}{OpenStack}{https://docs.openstack.org/operations-guide/}
 \end{itemize}
 
-\section*{Documentation Proxmox}
+\vspace{-4pt}\section*{Documentation Proxmox}
 \begin{itemize}
-  \item Proxmox VE Administration Guide.
-  \item Proxmox Backup Server Administration Guide.
+  \refdoc{Proxmox VE Administration Guide}{Proxmox Server Solutions}{https://pve.proxmox.com/pve-docs/pve-admin-guide.html}
+  \refdoc{Proxmox Backup Server Documentation}{Proxmox Server Solutions}{https://pbs.proxmox.com/docs/}
 \end{itemize}
 
-\section*{Documentation Ceph (si retenu)}
+\vspace{-4pt}\section*{Documentation Ceph (si retenu)}
 \begin{itemize}
-  \item Ceph Documentation — Architecture et Operations.
-  \item Ceph Hardware Recommendations.
+  \refdoc{Ceph Documentation, architecture et opérations}{Ceph}{https://docs.ceph.com/en/latest/}
+  \refdoc{Ceph Hardware Recommendations}{Ceph}{https://docs.ceph.com/en/latest/start/hardware-recommendations/}
 \end{itemize}
 
-\section*{Documents du dossier}
+\vspace{-4pt}\section*{Documents du dossier}
 \begin{itemize}
   \item DOC-ARCH-000 — Dossier d'architecture (ce document).
   \item DOC-ARCH-001 à 011 — Voir la liste dans le suivi des révisions.
 \end{itemize}
+
+\endgroup

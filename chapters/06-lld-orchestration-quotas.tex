@@ -24,19 +24,24 @@ Soit :
   \item $U$ : usage courant du groupe (vCPU effectivement consommés).
 \end{itemize}
 
-\begin{tabularx}{\textwidth}{@{}lXX@{}}
+\begin{xltabular}{\textwidth}{@{}lXX@{}}
 \toprule
-\textbf{Condition} & \textbf{État contribution} & \textbf{Quota étudiant} \\
+\hd{Condition} & \hd{État contribution} & \hd{Quota étudiant} \\
 \midrule
+\endhead
+\bottomrule
+\endfoot
+\bottomrule
+\endlastfoot
 $U \leq L'$ & \texttt{RELEASED} immédiatement & Restitué \\
 $U > L'$    & \texttt{RELEASE\_PENDING} & Gelé (non restitué) \\
-\bottomrule
-\end{tabularx}
+
+\end{xltabular}
 
 La libération n'est jamais partielle : soit les $c$ vCPU sont entièrement restitués, soit ils restent entièrement gelés.
 
 \section{Modèle de données}
-\begin{lstlisting}[language=SQL, caption={Schéma PostgreSQL}]
+\begin{lstlisting}[caption={Schéma PostgreSQL}]
 CREATE TABLE student (
   id                  UUID PRIMARY KEY,
   login               VARCHAR(64)  UNIQUE NOT NULL,
@@ -89,15 +94,15 @@ CREATE TABLE audit_log (
 \end{lstlisting}
 
 \section{Machines à états}
-\begin{figure}[htbp]
-\centering
+\begin{figure}[H]
+\centering\vspace{2pt}
 \input{figures/fig-etat-contribution}
 \caption{Machine à états d'une contribution.}
 \label{fig:etat-contribution}
 \end{figure}
 
-\begin{figure}[htbp]
-\centering
+\begin{figure}[H]
+\centering\vspace{2pt}
 \input{figures/fig-etat-groupe}
 \caption{Machine à états d'un groupe.}
 \label{fig:etat-groupe}
@@ -117,10 +122,15 @@ Le quota transféré est un quota \textbf{logique}, pas une réservation physiqu
 \end{infobox}
 
 \section{API d'orchestration}
-\begin{tabularx}{\textwidth}{@{}lllX@{}}
+\begin{xltabular}{\textwidth}{@{}lllX@{}}
 \toprule
-\textbf{Méthode} & \textbf{Chemin} & \textbf{Rôle} & \textbf{Description} \\
+\hd{Méthode} & \hd{Chemin} & \hd{Rôle} & \hd{Description} \\
 \midrule
+\endhead
+\bottomrule
+\endfoot
+\bottomrule
+\endlastfoot
 POST   & /students                                 & admin        & Créer étudiant \\
 GET    & /students/\{id\}/available                & self / admin & Quota libre contribuable \\
 POST   & /groups                                   & student      & Créer groupe + contribution \\
@@ -130,21 +140,26 @@ POST   & /groups/\{id\}/contributions/\{cid\}/rejoin & self       & Réintégrat
 GET    & /groups/\{id\}/usage                      & member / admin & Usage et quota du groupe \\
 POST   & /admin/groups/\{id\}/force-release/\{cid\} & admin       & Libération forcée (escalade) \\
 GET    & /audit                                    & admin        & Journal d'audit \\
-\bottomrule
-\end{tabularx}
+
+\end{xltabular}
 
 \section{Jobs de fond}
-\begin{tabularx}{\textwidth}{@{}lXl@{}}
+\begin{xltabular}{\textwidth}{@{}lXl@{}}
 \toprule
-\textbf{Job} & \textbf{Rôle} & \textbf{Fréquence} \\
+\hd{Job} & \hd{Rôle} & \hd{Fréquence} \\
 \midrule
+\endhead
+\bottomrule
+\endfoot
+\bottomrule
+\endlastfoot
 reconcile\_quota\_drift    & Compare DB et OpenStack, corrige les écarts & 15 min \\
 check\_release\_pending    & Bascule en \texttt{RELEASED} si $U \leq L'$ & 5 min \\
 check\_group\_dissolution  & Gère le délai 30 j des \texttt{PENDING\_DELETE} & 1 h \\
 notify\_pending\_release   & Notifications J+0, J+7, J+14 & 1×/jour \\
 expire\_groups             & Nettoyage et purge des contributions anciennes & 1×/jour \\
-\bottomrule
-\end{tabularx}
+
+\end{xltabular}
 
 \section{Cohérence et réconciliation}
 Pattern outbox : la transaction DB écrit la contribution et un enregistrement outbox. Un worker consomme l'outbox et applique l'action OpenStack. En cas d'échec : retry avec backoff (5 max), puis alerte. Job périodique de réconciliation pour les écarts résiduels.
@@ -161,12 +176,17 @@ Aucune écriture OpenStack sans enregistrement outbox préalable. Aucune contrib
   \item Journal d'audit exhaustif.
 \end{itemize}
 
-\begin{tabularx}{\textwidth}{@{}lrrrX@{}}
+\begin{xltabular}{\textwidth}{@{}lrrrX@{}}
 \toprule
-\textbf{Composant} & \textbf{vCPU} & \textbf{RAM} & \textbf{Disque} & \textbf{Remarque} \\
+\hd{Composant} & \hd{vCPU} & \hd{RAM} & \hd{Disque} & \hd{Remarque} \\
 \midrule
+\endhead
+\bottomrule
+\endfoot
+\bottomrule
+\endlastfoot
 VM management (API + worker + Redis) & 2 & 4 Go & 40 Go & Phase pilote \\
 PostgreSQL                            & 2 & 4 Go & 80 Go & Séparer en production \\
 Worker Celery                         & 1 & 2 Go & 20 Go & Cohabite en pilote \\
-\bottomrule
-\end{tabularx}
+
+\end{xltabular}
